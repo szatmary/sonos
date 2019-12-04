@@ -188,6 +188,8 @@ func (z *ZonePlayer) IsCoordinator() bool {
 	return false
 }
 
+// Convience functions
+
 func (z *ZonePlayer) GetZoneGroupState() (*ZoneGroupState, error) {
 	zoneGroupStateResponse, err := z.ZoneGroupTopology.GetZoneGroupState(z.HttpClient, &zgt.GetZoneGroupStateArgs{})
 	if err != nil {
@@ -215,6 +217,20 @@ func (z *ZonePlayer) SetVolume(desiredVolume int) error {
 	_, err := z.RenderingControl.SetVolume(z.HttpClient, &ren.SetVolumeArgs{
 		Channel:       "Master",
 		DesiredVolume: uint16(desiredVolume),
+	})
+	return err
+}
+
+func (z *ZonePlayer) Play() error {
+	_, err := z.AVTransport.Play(z.HttpClient, &avt.PlayArgs{
+		Speed: "1.0",
+	})
+	return err
+}
+
+func (z *ZonePlayer) SetAVTransportURI(url string) error {
+	_, err := z.AVTransport.SetAVTransportURI(z.HttpClient, &avt.SetAVTransportURIArgs{
+		CurrentURI: url,
 	})
 	return err
 }
