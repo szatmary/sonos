@@ -773,7 +773,7 @@ func (s *Service) Play(httpClient *http.Client, args *PlayArgs) (*PlayResponse, 
 		return nil, err
 	}
 	if r.Body.Play == nil {
-		return nil, errors.New(`unexpected respose from service calling avtransport.Play()`)
+		return nil, errors.New(`unexpected response from service calling avtransport.Play()`)
 	}
 
 	return r.Body.Play, nil

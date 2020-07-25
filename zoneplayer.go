@@ -223,7 +223,7 @@ func (z *ZonePlayer) SetVolume(desiredVolume int) error {
 
 func (z *ZonePlayer) Play() error {
 	_, err := z.AVTransport.Play(z.HttpClient, &avt.PlayArgs{
-		Speed: "1.0",
+		Speed: "1",
 	})
 	return err
 }
