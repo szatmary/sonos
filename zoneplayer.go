@@ -1,4 +1,4 @@
-package gono6
+package sonnos
 
 import (
 	"encoding/xml"
@@ -146,9 +146,10 @@ func NewZonePlayer(deviceDescriptionURL *url.URL) (*ZonePlayer, error) {
 	return &zp, nil
 }
 
-// go http library does sone stuff that make upnp scbscriptions difficult
+// go http library does some stuff that make upnp scbscriptions difficult
 // hecce here we just open a tcp connection and fire off the request manually
 func (s *Sonos) subscribe(zp *ZonePlayer) error {
+	return nil
 	// sub := func(serialNum string, eventEndpoint *url.URL) error {
 	// 	host := eventEndpoint.Hostname() + ":" + eventEndpoint.Port()
 	// 	conn, err := net.Dial("tcp", host)
@@ -240,6 +241,7 @@ func (z *ZonePlayer) SerialNum() string {
 
 func (z *ZonePlayer) IsCoordinator() bool {
 	zoneGroupState, err := z.GetZoneGroupState()
+	// fmt.Printf("GetZoneGroupState %v %v\n", zoneGroupState, err)
 	if err != nil {
 		return false
 	}
@@ -256,6 +258,7 @@ func (z *ZonePlayer) IsCoordinator() bool {
 
 func (z *ZonePlayer) GetZoneGroupState() (*ZoneGroupState, error) {
 	zoneGroupStateResponse, err := z.ZoneGroupTopology.GetZoneGroupState(z.HttpClient, &ZoneGroupTopologyGetZoneGroupStateArgs{})
+	// fmt.Printf("z.ZoneGroupTopology.GetZoneGroupState %v %v\n", zoneGroupStateResponse, err)
 	if err != nil {
 		return nil, err
 	}

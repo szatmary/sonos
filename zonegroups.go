@@ -1,4 +1,4 @@
-package gono6
+package sonnos
 
 import "encoding/xml"
 

@@ -119,7 +119,7 @@ func MakeServiceApi(ServiceName, serviceControlEndpoint, serviceEventEndpoint, x
 	}
 
 	buf := bytes.NewBufferString("")
-	fmt.Fprintf(buf, `package gono6
+	fmt.Fprintf(buf, `package sonnos
 
 import (
 	"bytes"
@@ -184,6 +184,7 @@ func New%sService(deviceUrl *url.URL) *%sService {
 	if err != nil {
 		return nil, err
 	}
+	// fmt.Printf("soapAction %%s: postBody %%v\n", soapAction, string(postBody))
 	req, err := http.NewRequest("POST", s.ControlEndpoint.String(), bytes.NewBuffer(postBody))
 	if err != nil {
 		return nil, err
@@ -199,6 +200,7 @@ func New%sService(deviceUrl *url.URL) *%sService {
 	if err != nil {
 		return nil, err
 	}
+	// fmt.Printf("responseBody %%v\n", string(responseBody))
 	var envelopeResponse %sEnvelopeResponse
 	err = xml.Unmarshal(responseBody,&envelopeResponse)
 	if err != nil {
@@ -243,10 +245,9 @@ func New%sService(deviceUrl *url.URL) *%sService {
 		fmt.Fprint(buf, "}\n")
 
 		// TODO Validate, inputs
-		n := action.Name // TODO replace with strings.Replacer
 		fmt.Fprintf(buf, `func (s *%sService) %s(httpClient *http.Client, args *%s%sArgs) (*%s%sResponse, error) {
-	args.XMLNameSpace = "urn:schemas-upnp-org:service"
-	r, err := s._%sExec("urn:schemas-upnp-org:service#%s", httpClient,
+	args.XMLNameSpace = "urn:schemas-upnp-org:service:%s:1"
+	r, err := s._%sExec("urn:schemas-upnp-org:service:%s:1#%s", httpClient,
 		&%sEnvelope{
 			Body: %sBody{%s: args},
 			EncodingStyle: "http://schemas.xmlsoap.org/soap/encoding/", XMLNameSpace: "http://schemas.xmlsoap.org/soap/envelope/",
@@ -259,8 +260,22 @@ func New%sService(deviceUrl *url.URL) *%sService {
 	}
 	return r.Body.%s, nil
 }
-`, ServiceName, n, ServiceName, n, ServiceName, n,
-			ServiceName, ServiceName, ServiceName, ServiceName, n, n, n)
+`, ServiceName, action.Name, ServiceName, action.Name, ServiceName, action.Name,
+			ServiceName, ServiceName, ServiceName, action.Name, ServiceName,
+			ServiceName, action.Name, action.Name, action.Name)
+	}
+
+	// Exit early if no events
+	nonSendEvents := 0
+	for _, sv := range s.StateVariables {
+		if sv.SendEvents != "yes" {
+			continue
+		}
+		nonSendEvents++
+	}
+
+	if nonSendEvents == 0 {
+		return buf.Bytes()
 	}
 
 	fmt.Fprintf(buf, `func (s *%sService) %sSubscribe(callback url.URL) error {`, ServiceName, ServiceName)
@@ -291,7 +306,6 @@ func New%sService(deviceUrl *url.URL) *%sService {
 }`)
 
 	fmt.Fprint(buf, "\n// Events\n")
-	fmt.Fprintf(buf, "type _%sDummy bool\n", ServiceName)
 	for _, sv := range s.StateVariables {
 		if sv.SendEvents != "yes" {
 			continue
@@ -301,7 +315,6 @@ func New%sService(deviceUrl *url.URL) *%sService {
 
 	fmt.Fprintf(buf, "type %sUpnpEvent struct {\nXMLName xml.Name `xml:\"propertyset\"`\nXMLNameSpace string `xml:\"xmlns:e,attr\"`\nProperties []%sProperty `xml:\"property\"`\n}\n", ServiceName, ServiceName)
 	fmt.Fprintf(buf, "type %sProperty struct {\nXMLName xml.Name `xml:\"property\"`\n", ServiceName)
-	fmt.Fprintf(buf, "_Dummy *_%sDummy `xml:\"bool\"`\n", ServiceName)
 	for _, sv := range s.StateVariables {
 		if sv.SendEvents != "yes" {
 			continue
@@ -325,7 +338,7 @@ func New%sService(deviceUrl *url.URL) *%sService {
 		}
 		fmt.Fprintf(buf, "case prop.%s != nil:\n zp.EventCallback(*prop.%s)\n", sv.Name, sv.Name)
 	}
-	fmt.Fprintf(buf, "case prop._Dummy != nil:\n}\n}\n\n}")
+	fmt.Fprintf(buf, "}\n}\n}")
 	return buf.Bytes()
 }
 
