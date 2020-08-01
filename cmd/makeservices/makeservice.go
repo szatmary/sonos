@@ -119,7 +119,7 @@ func MakeServiceApi(ServiceName, serviceControlEndpoint, serviceEventEndpoint, x
 	}
 
 	buf := bytes.NewBufferString("")
-	fmt.Fprintf(buf, `package sonnos
+	fmt.Fprintf(buf, `package sonos
 
 import (
 	"bytes"

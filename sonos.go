@@ -1,12 +1,14 @@
-package sonnos
+package sonos
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"sync"
+	"time"
 )
 
 const (
@@ -99,24 +101,27 @@ func (s *Sonos) search() error {
 	return nil
 }
 
-// func FindRoom(room string, timeout time.Duration) (*ZonePlayer, error) {
-// 	son, err := NewSonos(func(zp *ZonePlayer) {
-// 		// defer son.Close()
+func FindRoom(room string, timeout time.Duration) (*ZonePlayer, error) {
+	c := make(chan *ZonePlayer)
+	defer close(c)
+	son, err := NewSonos(func(zp *ZonePlayer) {
+		if zp.RoomName() == room {
+			c <- zp
+		}
+	})
+	if err != nil {
+		return nil, err
+	}
 
-// 		// to := time.After(timeout)
-// 		// for {
-// 		// 	select {
-// 		// 	case <-to:
-// 		// 		return nil, errors.New("timeout")
-// 		// 	case zp := <-son.found:
-// 		// 		if zp.RoomName() == room {
-// 		// 			return zp, nil
-// 		// 		}
-// 		// 	}
-// 		// }
-// 	})
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// }
+	defer son.Close()
+	to := time.After(timeout)
+	for {
+		select {
+		case <-to:
+			return nil, errors.New("timeout")
+		case zp := <-c:
+			return zp, nil
+		}
+	}
+	return nil, errors.New("not found")
+}

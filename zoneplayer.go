@@ -1,4 +1,4 @@
-package sonnos
+package sonos
 
 import (
 	"encoding/xml"
