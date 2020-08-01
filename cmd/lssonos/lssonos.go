@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 
-	"github.com/szatmary/sonos"
+	sonos "github.com/szatmary/gono6"
 )
 
 func main() {
@@ -15,14 +14,17 @@ func main() {
 	}
 	defer son.Close()
 
-	found, _ := son.Search()
-	to := time.After(10 * time.Second)
-	for {
-		select {
-		case <-to:
-			return
-		case zp := <-found:
-			fmt.Printf("%s\t%s\t%s", zp.RoomName(), zp.ModelName(), zp.SerialNum())
-		}
+	err = son.Search()
+	if err != nil {
+		return
 	}
+	// to := time.After(10 * time.Second)
+	// for {
+	// 	select {
+	// 	case <-to:
+	// 		return
+	// 	case zp := <-found:
+	// 		fmt.Printf("%s\t%s\t%s\n", zp.RoomName(), zp.ModelName(), zp.SerialNum())
+	// 	}
+	// }
 }

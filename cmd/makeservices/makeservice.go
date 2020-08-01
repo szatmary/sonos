@@ -3,11 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 type AllowedValueRange struct {
@@ -68,7 +66,7 @@ func (s *StateVariable) GoDataType() string {
 	case "uuid":
 		return "string"
 	default:
-		return ""
+		panic(s.DataType)
 	}
 }
 
@@ -93,7 +91,7 @@ type SpecVersion struct {
 
 type Scpd struct {
 	XMLName        xml.Name        `xml:"scpd"`
-	Xmlns          string          `xml:"type,attr"`
+	XMLNameSpace   string          `xml:"type,attr"`
 	SpecVersion    SpecVersion     `xml:"specVersion"`
 	StateVariables []StateVariable `xml:"serviceStateTable>stateVariable"`
 	Actions        []Action        `xml:"actionList>action"`
@@ -108,99 +106,118 @@ func (s *Scpd) GetStateVariable(name string) *StateVariable {
 	return nil
 }
 
-func MakeServiceApi(ServiceName, serviceControlEndpoint, serviceEventEndpoint string, scdp []byte) ([]byte, error) {
+func MakeServiceApi(ServiceName, serviceControlEndpoint, serviceEventEndpoint, xmlFile string) []byte {
 	var s Scpd
-	err := xml.Unmarshal(scdp, &s)
+	scdp, err := ioutil.ReadFile(xmlFile)
 	if err != nil {
-		return nil, err
+		panic(err)
+	}
+
+	err = xml.Unmarshal(scdp, &s)
+	if err != nil {
+		panic(err)
 	}
 
 	buf := bytes.NewBufferString("")
-	fmt.Fprintf(buf, "package %s\n\n", strings.ToLower(ServiceName))
-	fmt.Fprint(buf, "import (\n\"net/url\"\n\"errors\"\n\"io/ioutil\"\n\"encoding/xml\"\n\"bytes\"\n\"net/http\"\n)\n")
+	fmt.Fprintf(buf, `package gono6
 
-	fmt.Fprint(buf, "const (\n")
-	fmt.Fprintf(buf, "_ServiceURN = \"urn:schemas-upnp-org:service:%s:1\"\n", ServiceName)
-	fmt.Fprintf(buf, "_EncodingSchema = \"http://schemas.xmlsoap.org/soap/encoding/\"\n")
-	fmt.Fprintf(buf, "_EnvelopeSchema = \"http://schemas.xmlsoap.org/soap/envelope/\"\n")
-	fmt.Fprint(buf, ")\n")
+import (
+	"bytes"
+	"encoding/xml"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"fmt"
+	"bufio"
+	"net"
+)
 
-	// Service object
-	fmt.Fprintf(buf, "type Service struct {\nControlEndpoint *url.URL\nEventEndpoint *url.URL\n}\n")
-	fmt.Fprintf(buf, "func NewService(deviceUrl *url.URL) *Service {\n")
-	fmt.Fprintf(buf, "c, err := url.Parse(`%s`)\nif nil != err { panic(err) }\n", serviceControlEndpoint)
-	fmt.Fprintf(buf, "e, err := url.Parse(`%s`)\nif nil != err { panic(err) }\n", serviceEventEndpoint)
-	fmt.Fprintf(buf, "return &Service{\nControlEndpoint: deviceUrl.ResolveReference(c),\nEventEndpoint: deviceUrl.ResolveReference(e),\n}\n}\n")
+type %sService struct {
+	ControlEndpoint *url.URL
+	EventEndpoint   *url.URL
+}
+
+func New%sService(deviceUrl *url.URL) *%sService {
+	c, _ := url.Parse("%s")
+	e, _ := url.Parse("%s")
+	return &%sService{
+		ControlEndpoint: deviceUrl.ResolveReference(c),
+		EventEndpoint:   deviceUrl.ResolveReference(e),
+	}
+}
+`, ServiceName, ServiceName, ServiceName, serviceControlEndpoint, serviceEventEndpoint, ServiceName)
 
 	// Martial structs
-	fmt.Fprintf(buf, "type Envelope struct {\n")
-	fmt.Fprintf(buf, "XMLName xml.Name `xml:\"s:Envelope\"`\n")
-	fmt.Fprintf(buf, "Xmlns string `xml:\"xmlns:s,attr\"`\n")
-	fmt.Fprintf(buf, "EncodingStyle string `xml:\"s:encodingStyle,attr\"`\n")
-	fmt.Fprintf(buf, "Body Body `xml:\"s:Body\"`\n")
-	fmt.Fprintf(buf, "}\n")
+	fmt.Fprintf(buf, "type %sEnvelope struct {\n", ServiceName)
+	fmt.Fprint(buf, "XMLName xml.Name `xml:\"s:Envelope\"`\n")
+	fmt.Fprint(buf, "XMLNameSpace string `xml:\"xmlns:s,attr\"`\n")
+	fmt.Fprint(buf, "EncodingStyle string `xml:\"s:encodingStyle,attr\"`\n")
+	fmt.Fprintf(buf, "Body %sBody `xml:\"s:Body\"`\n", ServiceName)
+	fmt.Fprint(buf, "}\n")
 
-	fmt.Fprintf(buf, "type Body struct {\n")
+	fmt.Fprintf(buf, "type %sBody struct {\n", ServiceName)
 	fmt.Fprint(buf, "XMLName xml.Name `xml:\"s:Body\"`\n")
 	for _, action := range s.Actions {
-		fmt.Fprintf(buf, "%s *%sArgs `xml:\"u:%s,omitempty\"`\n", action.Name, action.Name, action.Name)
+		fmt.Fprintf(buf, "%s *%s%sArgs `xml:\"u:%s,omitempty\"`\n", action.Name, ServiceName, action.Name, action.Name)
 	}
 	fmt.Fprint(buf, "}\n")
 
 	// Unmartial structs
-	fmt.Fprintf(buf, "type EnvelopeResponse struct {\n")
-	fmt.Fprintf(buf, "XMLName xml.Name `xml:\"Envelope\"`\n")
-	fmt.Fprintf(buf, "Xmlns string `xml:\"xmlns:s,attr\"`\n")
-	fmt.Fprintf(buf, "EncodingStyle string `xml:\"encodingStyle,attr\"`\n")
-	fmt.Fprintf(buf, "Body BodyResponse `xml:\"Body\"`\n")
-	fmt.Fprintf(buf, "}\n")
+	fmt.Fprintf(buf, "type %sEnvelopeResponse struct {\n", ServiceName)
+	fmt.Fprint(buf, "XMLName xml.Name `xml:\"Envelope\"`\n")
+	fmt.Fprint(buf, "XMLNameSpace string `xml:\"xmlns:s,attr\"`\n")
+	fmt.Fprint(buf, "EncodingStyle string `xml:\"encodingStyle,attr\"`\n")
+	fmt.Fprintf(buf, "Body %sBodyResponse `xml:\"Body\"`\n", ServiceName)
+	fmt.Fprint(buf, "}\n")
 
-	fmt.Fprintf(buf, "type BodyResponse struct {\n")
+	fmt.Fprintf(buf, "type %sBodyResponse struct {\n", ServiceName)
 	fmt.Fprint(buf, "XMLName xml.Name `xml:\"Body\"`\n")
 	for _, action := range s.Actions {
-		fmt.Fprintf(buf, "%s *%sResponse `xml:\"%sResponse,omitempty\"`\n", action.Name, action.Name, action.Name)
+		fmt.Fprintf(buf, "%s *%s%sResponse `xml:\"%sResponse\"`\n", action.Name, ServiceName, action.Name, action.Name)
 	}
-	fmt.Fprintf(buf, "}\n")
+	fmt.Fprint(buf, "}\n")
 
 	// exec function
-	fmt.Fprintf(buf, "func (s *Service) exec(actionName string, httpClient *http.Client, envelope *Envelope) (*EnvelopeResponse, error) {\n")
-	fmt.Fprintf(buf, "marshaled, err := xml.Marshal(envelope)\n")
-	fmt.Fprintf(buf, "if err != nil { return nil, err\n}\n")
-	fmt.Fprintf(buf, "postBody := []byte(`<?xml version=\"1.0\"?>`)\n")
-	fmt.Fprintf(buf, "postBody = append(postBody, marshaled...)\n")
-	fmt.Fprintf(buf, "req, err := http.NewRequest(`POST`, s.ControlEndpoint.String(), bytes.NewBuffer(postBody))\n")
-	fmt.Fprintf(buf, "if err != nil { return nil, err\n}\n")
-	fmt.Fprintf(buf, "req.Header.Set(`Content-Type`, `text/xml; charset=\"utf-8\"`)\n")
-	fmt.Fprintf(buf, "req.Header.Set(`SOAPAction`, _ServiceURN+`#`+actionName)\n")
-	fmt.Fprintf(buf, "res, err := httpClient.Do(req)\n")
-	fmt.Fprintf(buf, "if err != nil { return nil, err\n}\n")
-	fmt.Fprintf(buf, "defer res.Body.Close()\n")
-	fmt.Fprintf(buf, "responseBody, err := ioutil.ReadAll(res.Body)\n")
-	fmt.Fprintf(buf, "if err != nil { return nil, err\n}\n")
-	fmt.Fprintf(buf, "var envelopeResponse EnvelopeResponse\n")
-	fmt.Fprintf(buf, "err = xml.Unmarshal(responseBody,&envelopeResponse)\n")
-	fmt.Fprintf(buf, "if err != nil { return nil, err\n}\n")
-	fmt.Fprintf(buf, "return &envelopeResponse, nil\n}\n")
+	fmt.Fprintf(buf, `func (s *%sService) _%sExec(soapAction string, httpClient *http.Client, envelope *%sEnvelope) (*%sEnvelopeResponse, error) {
+	postBody, err := xml.Marshal(envelope)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", s.ControlEndpoint.String(), bytes.NewBuffer(postBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "text/xml; charset=\"utf-8\"")
+	req.Header.Set("SOAPAction", soapAction)
+	res, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	responseBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	var envelopeResponse %sEnvelopeResponse
+	err = xml.Unmarshal(responseBody,&envelopeResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &envelopeResponse, nil
+}
+`, ServiceName, ServiceName, ServiceName, ServiceName, ServiceName)
 
 	for _, action := range s.Actions {
-		var inArguments, outArguments []Argument
+		fmt.Fprintf(buf, "type %s%sArgs struct {\n", ServiceName, action.Name)
+		fmt.Fprint(buf, "XMLNameSpace string `xml:\"xmlns:u,attr\"`\n")
 		for _, argument := range action.Arguments {
-			switch argument.Direction {
-			case "in":
-				inArguments = append(inArguments, argument)
-			case "out":
-				outArguments = append(outArguments, argument)
-			default:
-				return []byte{}, errors.New("unexpected action direction")
+			if argument.Direction != "in" {
+				continue
 			}
-		}
-
-		fmt.Fprintf(buf, "type %sArgs struct {\n", action.Name)
-		fmt.Fprintf(buf, "Xmlns string `xml:\"xmlns:u,attr\"`\n")
-		for _, argument := range inArguments {
 			sv := s.GetStateVariable(argument.RelatedStateVariable)
 			if sv == nil {
-				return []byte{}, fmt.Errorf("unexpected state variable %s", argument.RelatedStateVariable)
+				panic("unexpected state variable " + argument.RelatedStateVariable)
 			}
 			if sv.AllowedValueRange != nil {
 				fmt.Fprintf(buf, "// Allowed Range: %s -> %s step: %s\n", sv.AllowedValueRange.Minimum, sv.AllowedValueRange.Maximum, sv.AllowedValueRange.Step)
@@ -210,50 +227,113 @@ func MakeServiceApi(ServiceName, serviceControlEndpoint, serviceEventEndpoint st
 			}
 			fmt.Fprintf(buf, "%s %s `xml:\"%s\"`\n", argument.Name, sv.GoDataType(), argument.Name)
 		}
-		fmt.Fprintf(buf, "}\n")
+		fmt.Fprint(buf, "}\n")
 
-		fmt.Fprintf(buf, "type %sResponse struct {\n", action.Name)
-		for _, argument := range outArguments {
+		fmt.Fprintf(buf, "type %s%sResponse struct {\n", ServiceName, action.Name)
+		for _, argument := range action.Arguments {
+			if argument.Direction != "out" {
+				continue
+			}
 			sv := s.GetStateVariable(argument.RelatedStateVariable)
 			if sv == nil {
-				return []byte{}, fmt.Errorf("unexpected state variable %s", argument.RelatedStateVariable)
+				panic("unexpected state variable " + argument.RelatedStateVariable)
 			}
 			fmt.Fprintf(buf, "%s %s\t`xml:\"%s\"`\n", argument.Name, sv.GoDataType(), argument.Name)
 		}
-		fmt.Fprintf(buf, "}\n")
+		fmt.Fprint(buf, "}\n")
 
 		// TODO Validate, inputs
-		fmt.Fprintf(buf, "func (s *Service) %s(httpClient *http.Client, args *%sArgs) (*%sResponse, error) {\n", action.Name, action.Name, action.Name)
-		fmt.Fprintf(buf, "args.Xmlns = _ServiceURN\n")
-		fmt.Fprintf(buf, "r, err := s.exec(`%s`, httpClient, \n&Envelope{\n", action.Name)
-		fmt.Fprintf(buf, "EncodingStyle: _EncodingSchema,\n")
-		fmt.Fprintf(buf, "Xmlns: _EnvelopeSchema,\n")
-		fmt.Fprintf(buf, "Body: Body{%s: args},\n", action.Name)
-		fmt.Fprintf(buf, "})\n")
-		fmt.Fprintf(buf, "if err != nil { return nil, err }\n")
-		fmt.Fprintf(buf, "if r.Body.%s == nil { return nil, errors.New(`unexpected respose from service calling %s.%s()`) }\n",
-			action.Name, strings.ToLower(ServiceName), action.Name)
-		fmt.Fprintf(buf, "\nreturn r.Body.%s, nil }\n", action.Name)
+		n := action.Name // TODO replace with strings.Replacer
+		fmt.Fprintf(buf, `func (s *%sService) %s(httpClient *http.Client, args *%s%sArgs) (*%s%sResponse, error) {
+	args.XMLNameSpace = "urn:schemas-upnp-org:service"
+	r, err := s._%sExec("urn:schemas-upnp-org:service#%s", httpClient,
+		&%sEnvelope{
+			Body: %sBody{%s: args},
+			EncodingStyle: "http://schemas.xmlsoap.org/soap/encoding/", XMLNameSpace: "http://schemas.xmlsoap.org/soap/envelope/",
+			})
+	if err != nil {
+		return nil, err
 	}
-	return buf.Bytes(), nil
+	if r.Body.%s == nil {
+		return nil, errors.New("unexpected respose from service")
+	}
+	return r.Body.%s, nil
+}
+`, ServiceName, n, ServiceName, n, ServiceName, n,
+			ServiceName, ServiceName, ServiceName, ServiceName, n, n, n)
+	}
+
+	fmt.Fprintf(buf, `func (s *%sService) %sSubscribe(callback url.URL) error {`, ServiceName, ServiceName)
+	fmt.Fprint(buf, `
+	var req string
+	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", s.EventEndpoint.String())
+	req += fmt.Sprintf("HOST: %s\r\n", s.EventEndpoint.Host)
+	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 Gonos/1.0\r\n")
+	req += fmt.Sprintf("CALLBACK: <%s>\r\n", callback.String())
+	req += fmt.Sprintf("NT: upnp:event\r\n")
+	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
+	conn, err := net.Dial("tcp", s.EventEndpoint.Host)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(conn, req+"\r\n")
+	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if 200 != res.StatusCode {
+		fmt.Printf("%v\n", res)
+		return errors.New(string(body))
+	}
+	return nil
+}`)
+
+	fmt.Fprint(buf, "\n// Events\n")
+	fmt.Fprintf(buf, "type _%sDummy bool\n", ServiceName)
+	for _, sv := range s.StateVariables {
+		if sv.SendEvents != "yes" {
+			continue
+		}
+		fmt.Fprintf(buf, "type %s%s %s\n", ServiceName, sv.Name, sv.GoDataType())
+	}
+
+	fmt.Fprintf(buf, "type %sUpnpEvent struct {\nXMLName xml.Name `xml:\"propertyset\"`\nXMLNameSpace string `xml:\"xmlns:e,attr\"`\nProperties []%sProperty `xml:\"property\"`\n}\n", ServiceName, ServiceName)
+	fmt.Fprintf(buf, "type %sProperty struct {\nXMLName xml.Name `xml:\"property\"`\n", ServiceName)
+	fmt.Fprintf(buf, "_Dummy *_%sDummy `xml:\"bool\"`\n", ServiceName)
+	for _, sv := range s.StateVariables {
+		if sv.SendEvents != "yes" {
+			continue
+		}
+		fmt.Fprintf(buf, "%s *%s%s `xml:\"%s\"`\n", sv.Name, ServiceName, sv.Name, sv.Name)
+	}
+
+	fmt.Fprint(buf, "}\n")
+	fmt.Fprintf(buf, `func %sDispatchEvent(zp *ZonePlayer, body []byte) {
+	var evt %sUpnpEvent
+	err := xml.Unmarshal(body, &evt)
+	if err != nil {
+		return
+	}
+	for _, prop := range evt.Properties {
+	switch {
+`, ServiceName, ServiceName)
+	for _, sv := range s.StateVariables {
+		if sv.SendEvents != "yes" {
+			continue
+		}
+		fmt.Fprintf(buf, "case prop.%s != nil:\n zp.EventCallback(*prop.%s)\n", sv.Name, sv.Name)
+	}
+	fmt.Fprintf(buf, "case prop._Dummy != nil:\n}\n}\n\n}")
+	return buf.Bytes()
 }
 
 func main() {
-	// "http://192.168.131.242:1400/xml/RenderingControl1.xml"
-	// "RenderingControl"
 	serviceName := os.Args[1]
 	serviceEndpoint := os.Args[2]
 	controlEndpoint := os.Args[3]
 	serviceXml := os.Args[4]
-	body, err := ioutil.ReadFile(serviceXml)
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-		return
-	}
-	dotgo, err := MakeServiceApi(serviceName, serviceEndpoint, controlEndpoint, body)
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-		return
-	}
+	dotgo := MakeServiceApi(serviceName, serviceEndpoint, controlEndpoint, serviceXml)
 	fmt.Printf("%s\n", string(dotgo))
 }
