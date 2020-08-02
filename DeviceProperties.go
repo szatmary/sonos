@@ -781,67 +781,67 @@ func DevicePropertiesDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SettingsReplicationState != nil:
-			dispatchDevicePropertiesSettingsReplicationState(*prop.SettingsReplicationState) // string
+			dispatchDevicePropertiesSettingsReplicationState(zp, *prop.SettingsReplicationState) // string
 		case prop.ZoneName != nil:
-			dispatchDevicePropertiesZoneName(*prop.ZoneName) // string
+			dispatchDevicePropertiesZoneName(zp, *prop.ZoneName) // string
 		case prop.Icon != nil:
-			dispatchDevicePropertiesIcon(*prop.Icon) // string
+			dispatchDevicePropertiesIcon(zp, *prop.Icon) // string
 		case prop.Configuration != nil:
-			dispatchDevicePropertiesConfiguration(*prop.Configuration) // string
+			dispatchDevicePropertiesConfiguration(zp, *prop.Configuration) // string
 		case prop.Invisible != nil:
-			dispatchDevicePropertiesInvisible(*prop.Invisible) // bool
+			dispatchDevicePropertiesInvisible(zp, *prop.Invisible) // bool
 		case prop.IsZoneBridge != nil:
-			dispatchDevicePropertiesIsZoneBridge(*prop.IsZoneBridge) // bool
+			dispatchDevicePropertiesIsZoneBridge(zp, *prop.IsZoneBridge) // bool
 		case prop.AirPlayEnabled != nil:
-			dispatchDevicePropertiesAirPlayEnabled(*prop.AirPlayEnabled) // bool
+			dispatchDevicePropertiesAirPlayEnabled(zp, *prop.AirPlayEnabled) // bool
 		case prop.SupportsAudioIn != nil:
-			dispatchDevicePropertiesSupportsAudioIn(*prop.SupportsAudioIn) // bool
+			dispatchDevicePropertiesSupportsAudioIn(zp, *prop.SupportsAudioIn) // bool
 		case prop.SupportsAudioClip != nil:
-			dispatchDevicePropertiesSupportsAudioClip(*prop.SupportsAudioClip) // bool
+			dispatchDevicePropertiesSupportsAudioClip(zp, *prop.SupportsAudioClip) // bool
 		case prop.IsIdle != nil:
-			dispatchDevicePropertiesIsIdle(*prop.IsIdle) // bool
+			dispatchDevicePropertiesIsIdle(zp, *prop.IsIdle) // bool
 		case prop.MoreInfo != nil:
-			dispatchDevicePropertiesMoreInfo(*prop.MoreInfo) // string
+			dispatchDevicePropertiesMoreInfo(zp, *prop.MoreInfo) // string
 		case prop.ChannelMapSet != nil:
-			dispatchDevicePropertiesChannelMapSet(*prop.ChannelMapSet) // string
+			dispatchDevicePropertiesChannelMapSet(zp, *prop.ChannelMapSet) // string
 		case prop.HTSatChanMapSet != nil:
-			dispatchDevicePropertiesHTSatChanMapSet(*prop.HTSatChanMapSet) // string
+			dispatchDevicePropertiesHTSatChanMapSet(zp, *prop.HTSatChanMapSet) // string
 		case prop.HTFreq != nil:
-			dispatchDevicePropertiesHTFreq(*prop.HTFreq) // uint32
+			dispatchDevicePropertiesHTFreq(zp, *prop.HTFreq) // uint32
 		case prop.HTBondedZoneCommitState != nil:
-			dispatchDevicePropertiesHTBondedZoneCommitState(*prop.HTBondedZoneCommitState) // uint32
+			dispatchDevicePropertiesHTBondedZoneCommitState(zp, *prop.HTBondedZoneCommitState) // uint32
 		case prop.Orientation != nil:
-			dispatchDevicePropertiesOrientation(*prop.Orientation) // int32
+			dispatchDevicePropertiesOrientation(zp, *prop.Orientation) // int32
 		case prop.LastChangedPlayState != nil:
-			dispatchDevicePropertiesLastChangedPlayState(*prop.LastChangedPlayState) // string
+			dispatchDevicePropertiesLastChangedPlayState(zp, *prop.LastChangedPlayState) // string
 		case prop.RoomCalibrationState != nil:
-			dispatchDevicePropertiesRoomCalibrationState(*prop.RoomCalibrationState) // int32
+			dispatchDevicePropertiesRoomCalibrationState(zp, *prop.RoomCalibrationState) // int32
 		case prop.AvailableRoomCalibration != nil:
-			dispatchDevicePropertiesAvailableRoomCalibration(*prop.AvailableRoomCalibration) // string
+			dispatchDevicePropertiesAvailableRoomCalibration(zp, *prop.AvailableRoomCalibration) // string
 		case prop.TVConfigurationError != nil:
-			dispatchDevicePropertiesTVConfigurationError(*prop.TVConfigurationError) // bool
+			dispatchDevicePropertiesTVConfigurationError(zp, *prop.TVConfigurationError) // bool
 		case prop.HdmiCecAvailable != nil:
-			dispatchDevicePropertiesHdmiCecAvailable(*prop.HdmiCecAvailable) // bool
+			dispatchDevicePropertiesHdmiCecAvailable(zp, *prop.HdmiCecAvailable) // bool
 		case prop.WirelessMode != nil:
-			dispatchDevicePropertiesWirelessMode(*prop.WirelessMode) // uint32
+			dispatchDevicePropertiesWirelessMode(zp, *prop.WirelessMode) // uint32
 		case prop.WirelessLeafOnly != nil:
-			dispatchDevicePropertiesWirelessLeafOnly(*prop.WirelessLeafOnly) // bool
+			dispatchDevicePropertiesWirelessLeafOnly(zp, *prop.WirelessLeafOnly) // bool
 		case prop.HasConfiguredSSID != nil:
-			dispatchDevicePropertiesHasConfiguredSSID(*prop.HasConfiguredSSID) // bool
+			dispatchDevicePropertiesHasConfiguredSSID(zp, *prop.HasConfiguredSSID) // bool
 		case prop.ChannelFreq != nil:
-			dispatchDevicePropertiesChannelFreq(*prop.ChannelFreq) // uint32
+			dispatchDevicePropertiesChannelFreq(zp, *prop.ChannelFreq) // uint32
 		case prop.BehindWifiExtender != nil:
-			dispatchDevicePropertiesBehindWifiExtender(*prop.BehindWifiExtender) // uint32
+			dispatchDevicePropertiesBehindWifiExtender(zp, *prop.BehindWifiExtender) // uint32
 		case prop.WifiEnabled != nil:
-			dispatchDevicePropertiesWifiEnabled(*prop.WifiEnabled) // bool
+			dispatchDevicePropertiesWifiEnabled(zp, *prop.WifiEnabled) // bool
 		case prop.ConfigMode != nil:
-			dispatchDevicePropertiesConfigMode(*prop.ConfigMode) // string
+			dispatchDevicePropertiesConfigMode(zp, *prop.ConfigMode) // string
 		case prop.SecureRegState != nil:
-			dispatchDevicePropertiesSecureRegState(*prop.SecureRegState) // uint32
+			dispatchDevicePropertiesSecureRegState(zp, *prop.SecureRegState) // uint32
 		case prop.VoiceConfigState != nil:
-			dispatchDevicePropertiesVoiceConfigState(*prop.VoiceConfigState) // uint32
+			dispatchDevicePropertiesVoiceConfigState(zp, *prop.VoiceConfigState) // uint32
 		case prop.MicEnabled != nil:
-			dispatchDevicePropertiesMicEnabled(*prop.MicEnabled) // uint32
+			dispatchDevicePropertiesMicEnabled(zp, *prop.MicEnabled) // uint32
 		}
 	}
 }

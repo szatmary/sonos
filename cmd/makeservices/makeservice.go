@@ -314,7 +314,7 @@ func (s *%sService) EventEndpoint() *url.URL {
 			continue
 		}
 		// fmt.Fprintf(buf, "case prop.%s != nil:\n zp.EventCallback(*prop.%s)\n", sv.Name, sv.Name)
-		fmt.Fprintf(buf, "case prop.%s != nil:\ndispatch%s%s(*prop.%s) // %s\n", sv.Name, ServiceName, sv.Name, sv.Name, sv.GoDataType())
+		fmt.Fprintf(buf, "case prop.%s != nil:\ndispatch%s%s(zp, *prop.%s) // %s\n", sv.Name, ServiceName, sv.Name, sv.Name, sv.GoDataType())
 	}
 	fmt.Fprintf(buf, "}\n}\n}")
 	return buf.Bytes()

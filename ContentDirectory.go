@@ -531,31 +531,31 @@ func ContentDirectoryDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SystemUpdateID != nil:
-			dispatchContentDirectorySystemUpdateID(*prop.SystemUpdateID) // uint32
+			dispatchContentDirectorySystemUpdateID(zp, *prop.SystemUpdateID) // uint32
 		case prop.ContainerUpdateIDs != nil:
-			dispatchContentDirectoryContainerUpdateIDs(*prop.ContainerUpdateIDs) // string
+			dispatchContentDirectoryContainerUpdateIDs(zp, *prop.ContainerUpdateIDs) // string
 		case prop.ShareIndexInProgress != nil:
-			dispatchContentDirectoryShareIndexInProgress(*prop.ShareIndexInProgress) // bool
+			dispatchContentDirectoryShareIndexInProgress(zp, *prop.ShareIndexInProgress) // bool
 		case prop.ShareIndexLastError != nil:
-			dispatchContentDirectoryShareIndexLastError(*prop.ShareIndexLastError) // string
+			dispatchContentDirectoryShareIndexLastError(zp, *prop.ShareIndexLastError) // string
 		case prop.UserRadioUpdateID != nil:
-			dispatchContentDirectoryUserRadioUpdateID(*prop.UserRadioUpdateID) // string
+			dispatchContentDirectoryUserRadioUpdateID(zp, *prop.UserRadioUpdateID) // string
 		case prop.SavedQueuesUpdateID != nil:
-			dispatchContentDirectorySavedQueuesUpdateID(*prop.SavedQueuesUpdateID) // string
+			dispatchContentDirectorySavedQueuesUpdateID(zp, *prop.SavedQueuesUpdateID) // string
 		case prop.ShareListUpdateID != nil:
-			dispatchContentDirectoryShareListUpdateID(*prop.ShareListUpdateID) // string
+			dispatchContentDirectoryShareListUpdateID(zp, *prop.ShareListUpdateID) // string
 		case prop.RecentlyPlayedUpdateID != nil:
-			dispatchContentDirectoryRecentlyPlayedUpdateID(*prop.RecentlyPlayedUpdateID) // string
+			dispatchContentDirectoryRecentlyPlayedUpdateID(zp, *prop.RecentlyPlayedUpdateID) // string
 		case prop.Browseable != nil:
-			dispatchContentDirectoryBrowseable(*prop.Browseable) // bool
+			dispatchContentDirectoryBrowseable(zp, *prop.Browseable) // bool
 		case prop.RadioFavoritesUpdateID != nil:
-			dispatchContentDirectoryRadioFavoritesUpdateID(*prop.RadioFavoritesUpdateID) // uint32
+			dispatchContentDirectoryRadioFavoritesUpdateID(zp, *prop.RadioFavoritesUpdateID) // uint32
 		case prop.RadioLocationUpdateID != nil:
-			dispatchContentDirectoryRadioLocationUpdateID(*prop.RadioLocationUpdateID) // uint32
+			dispatchContentDirectoryRadioLocationUpdateID(zp, *prop.RadioLocationUpdateID) // uint32
 		case prop.FavoritesUpdateID != nil:
-			dispatchContentDirectoryFavoritesUpdateID(*prop.FavoritesUpdateID) // string
+			dispatchContentDirectoryFavoritesUpdateID(zp, *prop.FavoritesUpdateID) // string
 		case prop.FavoritePresetsUpdateID != nil:
-			dispatchContentDirectoryFavoritePresetsUpdateID(*prop.FavoritePresetsUpdateID) // string
+			dispatchContentDirectoryFavoritePresetsUpdateID(zp, *prop.FavoritePresetsUpdateID) // string
 		}
 	}
 }

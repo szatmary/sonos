@@ -175,7 +175,7 @@ func MusicServicesDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.ServiceListVersion != nil:
-			dispatchMusicServicesServiceListVersion(*prop.ServiceListVersion) // string
+			dispatchMusicServicesServiceListVersion(zp, *prop.ServiceListVersion) // string
 		}
 	}
 }

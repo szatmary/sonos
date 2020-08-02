@@ -558,15 +558,15 @@ func SystemPropertiesDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.CustomerID != nil:
-			dispatchSystemPropertiesCustomerID(*prop.CustomerID) // string
+			dispatchSystemPropertiesCustomerID(zp, *prop.CustomerID) // string
 		case prop.UpdateID != nil:
-			dispatchSystemPropertiesUpdateID(*prop.UpdateID) // uint32
+			dispatchSystemPropertiesUpdateID(zp, *prop.UpdateID) // uint32
 		case prop.UpdateIDX != nil:
-			dispatchSystemPropertiesUpdateIDX(*prop.UpdateIDX) // uint32
+			dispatchSystemPropertiesUpdateIDX(zp, *prop.UpdateIDX) // uint32
 		case prop.VoiceUpdateID != nil:
-			dispatchSystemPropertiesVoiceUpdateID(*prop.VoiceUpdateID) // uint32
+			dispatchSystemPropertiesVoiceUpdateID(zp, *prop.VoiceUpdateID) // uint32
 		case prop.ThirdPartyHash != nil:
-			dispatchSystemPropertiesThirdPartyHash(*prop.ThirdPartyHash) // string
+			dispatchSystemPropertiesThirdPartyHash(zp, *prop.ThirdPartyHash) // string
 		}
 	}
 }

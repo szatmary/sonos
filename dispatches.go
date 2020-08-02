@@ -1,338 +1,402 @@
 package sonos
 
 import (
+	"encoding/xml"
 	"fmt"
 	"os"
 )
 
-func dispatchAlarmClockTimeZone(value string) {
+func dispatchAlarmClockTimeZone(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchAlarmClockTimeZone %v\n", value)
 }
 
-func dispatchAlarmClockTimeServer(value string) {
+func dispatchAlarmClockTimeServer(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchAlarmClockTimeServer %v\n", value)
 }
 
-func dispatchAlarmClockTimeGeneration(value uint32) {
+func dispatchAlarmClockTimeGeneration(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchAlarmClockTimeGeneration %v\n", value)
 }
 
-func dispatchAlarmClockAlarmListVersion(value string) {
+func dispatchAlarmClockAlarmListVersion(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchAlarmClockAlarmListVersion %v\n", value)
 }
 
-func dispatchAlarmClockDailyIndexRefreshTime(value string) {
+func dispatchAlarmClockDailyIndexRefreshTime(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchAlarmClockDailyIndexRefreshTime %v\n", value)
 }
 
-func dispatchAlarmClockTimeFormat(value string) {
+func dispatchAlarmClockTimeFormat(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchAlarmClockTimeFormat %v\n", value)
 }
 
-func dispatchAlarmClockDateFormat(value string) {
+func dispatchAlarmClockDateFormat(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchAlarmClockDateFormat %v\n", value)
 }
 
-func dispatchAVTransportLastChange(value string) {
+func dispatchAVTransportLastChange(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchAVTransportLastChange %v\n", value)
 }
 
-func dispatchConnectionManagerSourceProtocolInfo(value string) {
+func dispatchConnectionManagerSourceProtocolInfo(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchConnectionManagerSourceProtocolInfo %v\n", value)
 }
 
-func dispatchConnectionManagerSinkProtocolInfo(value string) {
+func dispatchConnectionManagerSinkProtocolInfo(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchConnectionManagerSinkProtocolInfo %v\n", value)
 }
 
-func dispatchConnectionManagerCurrentConnectionIDs(value string) {
+func dispatchConnectionManagerCurrentConnectionIDs(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchConnectionManagerCurrentConnectionIDs %v\n", value)
 }
 
-func dispatchContentDirectorySystemUpdateID(value uint32) {
+func dispatchContentDirectorySystemUpdateID(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectorySystemUpdateID %v\n", value)
 }
 
-func dispatchContentDirectoryContainerUpdateIDs(value string) {
+func dispatchContentDirectoryContainerUpdateIDs(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryContainerUpdateIDs %v\n", value)
 }
 
-func dispatchContentDirectoryShareIndexInProgress(value bool) {
+func dispatchContentDirectoryShareIndexInProgress(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryShareIndexInProgress %v\n", value)
 }
 
-func dispatchContentDirectoryShareIndexLastError(value string) {
+func dispatchContentDirectoryShareIndexLastError(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryShareIndexLastError %v\n", value)
 }
 
-func dispatchContentDirectoryUserRadioUpdateID(value string) {
+func dispatchContentDirectoryUserRadioUpdateID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryUserRadioUpdateID %v\n", value)
 }
 
-func dispatchContentDirectorySavedQueuesUpdateID(value string) {
+func dispatchContentDirectorySavedQueuesUpdateID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectorySavedQueuesUpdateID %v\n", value)
 }
 
-func dispatchContentDirectoryShareListUpdateID(value string) {
+func dispatchContentDirectoryShareListUpdateID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryShareListUpdateID %v\n", value)
 }
 
-func dispatchContentDirectoryRecentlyPlayedUpdateID(value string) {
+func dispatchContentDirectoryRecentlyPlayedUpdateID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryRecentlyPlayedUpdateID %v\n", value)
 }
 
-func dispatchContentDirectoryBrowseable(value bool) {
+func dispatchContentDirectoryBrowseable(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryBrowseable %v\n", value)
 }
 
-func dispatchContentDirectoryRadioFavoritesUpdateID(value uint32) {
+func dispatchContentDirectoryRadioFavoritesUpdateID(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryRadioFavoritesUpdateID %v\n", value)
 }
 
-func dispatchContentDirectoryRadioLocationUpdateID(value uint32) {
+func dispatchContentDirectoryRadioLocationUpdateID(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryRadioLocationUpdateID %v\n", value)
 }
 
-func dispatchContentDirectoryFavoritesUpdateID(value string) {
+func dispatchContentDirectoryFavoritesUpdateID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryFavoritesUpdateID %v\n", value)
 }
 
-func dispatchContentDirectoryFavoritePresetsUpdateID(value string) {
+func dispatchContentDirectoryFavoritePresetsUpdateID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchContentDirectoryFavoritePresetsUpdateID %v\n", value)
 }
 
-func dispatchDevicePropertiesSettingsReplicationState(value string) {
+func dispatchDevicePropertiesSettingsReplicationState(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesSettingsReplicationState %v\n", value)
 }
 
-func dispatchDevicePropertiesZoneName(value string) {
+func dispatchDevicePropertiesZoneName(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesZoneName %v\n", value)
 }
 
-func dispatchDevicePropertiesIcon(value string) {
+func dispatchDevicePropertiesIcon(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesIcon %v\n", value)
 }
 
-func dispatchDevicePropertiesConfiguration(value string) {
+func dispatchDevicePropertiesConfiguration(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesConfiguration %v\n", value)
 }
 
-func dispatchDevicePropertiesInvisible(value bool) {
+func dispatchDevicePropertiesInvisible(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesInvisible %v\n", value)
 }
 
-func dispatchDevicePropertiesIsZoneBridge(value bool) {
+func dispatchDevicePropertiesIsZoneBridge(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesIsZoneBridge %v\n", value)
 }
 
-func dispatchDevicePropertiesAirPlayEnabled(value bool) {
+func dispatchDevicePropertiesAirPlayEnabled(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesAirPlayEnabled %v\n", value)
 }
 
-func dispatchDevicePropertiesSupportsAudioIn(value bool) {
+func dispatchDevicePropertiesSupportsAudioIn(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesSupportsAudioIn %v\n", value)
 }
 
-func dispatchDevicePropertiesSupportsAudioClip(value bool) {
+func dispatchDevicePropertiesSupportsAudioClip(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesSupportsAudioClip %v\n", value)
 }
 
-func dispatchDevicePropertiesIsIdle(value bool) {
+func dispatchDevicePropertiesIsIdle(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesIsIdle %v\n", value)
 }
 
-func dispatchDevicePropertiesMoreInfo(value string) {
+func dispatchDevicePropertiesMoreInfo(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesMoreInfo %v\n", value)
 }
 
-func dispatchDevicePropertiesChannelMapSet(value string) {
+func dispatchDevicePropertiesChannelMapSet(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesChannelMapSet %v\n", value)
 }
 
-func dispatchDevicePropertiesHTSatChanMapSet(value string) {
+func dispatchDevicePropertiesHTSatChanMapSet(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesHTSatChanMapSet %v\n", value)
 }
 
-func dispatchDevicePropertiesHTFreq(value uint32) {
+func dispatchDevicePropertiesHTFreq(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesHTFreq %v\n", value)
 }
 
-func dispatchDevicePropertiesHTBondedZoneCommitState(value uint32) {
+func dispatchDevicePropertiesHTBondedZoneCommitState(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesHTBondedZoneCommitState %v\n", value)
 }
 
-func dispatchDevicePropertiesOrientation(value int32) {
+func dispatchDevicePropertiesOrientation(zp *ZonePlayer, value int32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesOrientation %v\n", value)
 }
 
-func dispatchDevicePropertiesLastChangedPlayState(value string) {
+func dispatchDevicePropertiesLastChangedPlayState(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesLastChangedPlayState %v\n", value)
 }
 
-func dispatchDevicePropertiesRoomCalibrationState(value int32) {
+func dispatchDevicePropertiesRoomCalibrationState(zp *ZonePlayer, value int32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesRoomCalibrationState %v\n", value)
 }
 
-func dispatchDevicePropertiesAvailableRoomCalibration(value string) {
+func dispatchDevicePropertiesAvailableRoomCalibration(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesAvailableRoomCalibration %v\n", value)
 }
 
-func dispatchDevicePropertiesTVConfigurationError(value bool) {
+func dispatchDevicePropertiesTVConfigurationError(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesTVConfigurationError %v\n", value)
 }
 
-func dispatchDevicePropertiesHdmiCecAvailable(value bool) {
+func dispatchDevicePropertiesHdmiCecAvailable(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesHdmiCecAvailable %v\n", value)
 }
 
-func dispatchDevicePropertiesWirelessMode(value uint32) {
+func dispatchDevicePropertiesWirelessMode(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesWirelessMode %v\n", value)
 }
 
-func dispatchDevicePropertiesWirelessLeafOnly(value bool) {
+func dispatchDevicePropertiesWirelessLeafOnly(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesWirelessLeafOnly %v\n", value)
 }
 
-func dispatchDevicePropertiesHasConfiguredSSID(value bool) {
+func dispatchDevicePropertiesHasConfiguredSSID(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesHasConfiguredSSID %v\n", value)
 }
 
-func dispatchDevicePropertiesChannelFreq(value uint32) {
+func dispatchDevicePropertiesChannelFreq(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesChannelFreq %v\n", value)
 }
 
-func dispatchDevicePropertiesBehindWifiExtender(value uint32) {
+func dispatchDevicePropertiesBehindWifiExtender(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesBehindWifiExtender %v\n", value)
 }
 
-func dispatchDevicePropertiesWifiEnabled(value bool) {
+func dispatchDevicePropertiesWifiEnabled(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesWifiEnabled %v\n", value)
 }
 
-func dispatchDevicePropertiesConfigMode(value string) {
+func dispatchDevicePropertiesConfigMode(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesConfigMode %v\n", value)
 }
 
-func dispatchDevicePropertiesSecureRegState(value uint32) {
+func dispatchDevicePropertiesSecureRegState(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesSecureRegState %v\n", value)
 }
 
-func dispatchDevicePropertiesVoiceConfigState(value uint32) {
+func dispatchDevicePropertiesVoiceConfigState(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesVoiceConfigState %v\n", value)
 }
 
-func dispatchDevicePropertiesMicEnabled(value uint32) {
+func dispatchDevicePropertiesMicEnabled(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchDevicePropertiesMicEnabled %v\n", value)
 }
 
-func dispatchGroupManagementGroupCoordinatorIsLocal(value bool) {
+func dispatchGroupManagementGroupCoordinatorIsLocal(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupManagementGroupCoordinatorIsLocal %v\n", value)
 }
 
-func dispatchGroupManagementLocalGroupUUID(value string) {
+func dispatchGroupManagementLocalGroupUUID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupManagementLocalGroupUUID %v\n", value)
 }
 
-func dispatchGroupManagementVirtualLineInGroupID(value string) {
+func dispatchGroupManagementVirtualLineInGroupID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupManagementVirtualLineInGroupID %v\n", value)
 }
 
-func dispatchGroupManagementResetVolumeAfter(value bool) {
+func dispatchGroupManagementResetVolumeAfter(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupManagementResetVolumeAfter %v\n", value)
 }
 
-func dispatchGroupManagementVolumeAVTransportURI(value string) {
+func dispatchGroupManagementVolumeAVTransportURI(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupManagementVolumeAVTransportURI %v\n", value)
 }
 
-func dispatchGroupRenderingControlGroupMute(value bool) {
+func dispatchGroupRenderingControlGroupMute(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupRenderingControlGroupMute %v\n", value)
 }
 
-func dispatchGroupRenderingControlGroupVolume(value uint16) {
+func dispatchGroupRenderingControlGroupVolume(zp *ZonePlayer, value uint16) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupRenderingControlGroupVolume %v\n", value)
 }
 
-func dispatchGroupRenderingControlGroupVolumeChangeable(value bool) {
+func dispatchGroupRenderingControlGroupVolumeChangeable(zp *ZonePlayer, value bool) {
 	fmt.Fprintf(os.Stderr, "dispatchGroupRenderingControlGroupVolumeChangeable %v\n", value)
 }
 
-func dispatchMusicServicesServiceListVersion(value string) {
+func dispatchMusicServicesServiceListVersion(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchMusicServicesServiceListVersion %v\n", value)
 }
 
-func dispatchQueueLastChange(value string) {
+func dispatchQueueLastChange(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchQueueLastChange %v\n", value)
 }
 
-func dispatchRenderingControlLastChange(value string) {
+func dispatchRenderingControlLastChange(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchRenderingControlLastChange %v\n", value)
 }
 
-func dispatchSystemPropertiesCustomerID(value string) {
+func dispatchSystemPropertiesCustomerID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchSystemPropertiesCustomerID %v\n", value)
 }
 
-func dispatchSystemPropertiesUpdateID(value uint32) {
+func dispatchSystemPropertiesUpdateID(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchSystemPropertiesUpdateID %v\n", value)
 }
 
-func dispatchSystemPropertiesUpdateIDX(value uint32) {
+func dispatchSystemPropertiesUpdateIDX(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchSystemPropertiesUpdateIDX %v\n", value)
 }
 
-func dispatchSystemPropertiesVoiceUpdateID(value uint32) {
+func dispatchSystemPropertiesVoiceUpdateID(zp *ZonePlayer, value uint32) {
 	fmt.Fprintf(os.Stderr, "dispatchSystemPropertiesVoiceUpdateID %v\n", value)
 }
 
-func dispatchSystemPropertiesThirdPartyHash(value string) {
+func dispatchSystemPropertiesThirdPartyHash(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchSystemPropertiesThirdPartyHash %v\n", value)
 }
 
-func dispatchVirtualLineInLastChange(value string) {
+func dispatchVirtualLineInLastChange(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchVirtualLineInLastChange %v\n", value)
 }
 
-func dispatchZoneGroupTopologyAvailableSoftwareUpdate(value string) {
+func dispatchZoneGroupTopologyAvailableSoftwareUpdate(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyAvailableSoftwareUpdate %v\n", value)
 }
 
-func dispatchZoneGroupTopologyZoneGroupState(value string) {
-	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyZoneGroupState %v\n", value)
+type ZoneGroupMember struct {
+	XMLName                 xml.Name `xml:"ZoneGroupMember"`
+	UUID                    string   `xml:"UUID"`
+	Location                string   `xml:"Location"`
+	ZoneName                string   `xml:"ZoneName"`
+	Icon                    string   `xml:"Icon"`
+	Configuration           string   `xml:"Configuration"`
+	SoftwareVersion         string   `xml:"SoftwareVersion"`
+	SWGen                   string   `xml:"SWGen"`
+	MinCompatibleVersion    string   `xml:"MinCompatibleVersion"`
+	LegacyCompatibleVersion string   `xml:"LegacyCompatibleVersion"`
+	BootSeq                 string   `xml:"BootSeq"`
+	TVConfigurationError    string   `xml:"TVConfigurationError"`
+	HdmiCecAvailable        string   `xml:"HdmiCecAvailable"`
+	WirelessMode            string   `xml:"WirelessMode"`
+	WirelessLeafOnly        string   `xml:"WirelessLeafOnly"`
+	HasConfiguredSSID       string   `xml:"HasConfiguredSSID"`
+	ChannelFreq             string   `xml:"ChannelFreq"`
+	BehindWifiExtender      string   `xml:"BehindWifiExtender"`
+	WifiEnabled             string   `xml:"WifiEnabled"`
+	Orientation             string   `xml:"Orientation"`
+	RoomCalibrationState    string   `xml:"RoomCalibrationState"`
+	SecureRegState          string   `xml:"SecureRegState"`
+	VoiceConfigState        string   `xml:"VoiceConfigState"`
+	MicEnabled              string   `xml:"MicEnabled"`
+	AirPlayEnabled          string   `xml:"AirPlayEnabled"`
+	IdleState               string   `xml:"IdleState"`
+	MoreInfo                string   `xml:"MoreInfo"`
+	Satellite               []Device `xml:"Satellite>Device"`
+	VanishedDevice          []Device `xml:"VanishedDevices>Device"`
 }
 
-func dispatchZoneGroupTopologyThirdPartyMediaServersX(value string) {
+type ZoneGroup struct {
+	XMLName         xml.Name          `xml:"ZoneGroup"`
+	Coordinator     string            `xml:"Coordinator,attr"`
+	ID              string            `xml:"ID,attr"`
+	ZoneGroupMember []ZoneGroupMember `xml:"ZoneGroupMember"`
+}
+
+type ZoneGroupState struct {
+	XMLName    xml.Name    `xml:"ZoneGroupState"`
+	ZoneGroups []ZoneGroup `xml:"ZoneGroups>ZoneGroup"`
+}
+
+func dispatchZoneGroupTopologyZoneGroupState(zp *ZonePlayer, value string) {
+	if zp.ZoneGroupState == nil {
+		return
+	}
+
+	var zoneGroupState ZoneGroupState
+	err := xml.Unmarshal([]byte(value), &zoneGroupState)
+	if err != nil {
+		return
+	}
+
+	zp.ZoneGroupState(&zoneGroupState)
+}
+
+func dispatchZoneGroupTopologyThirdPartyMediaServersX(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyThirdPartyMediaServersX %v\n", value)
 }
 
-func dispatchZoneGroupTopologyAlarmRunSequence(value string) {
+func dispatchZoneGroupTopologyAlarmRunSequence(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyAlarmRunSequence %v\n", value)
 }
 
-func dispatchZoneGroupTopologyMuseHouseholdId(value string) {
+func dispatchZoneGroupTopologyMuseHouseholdId(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyMuseHouseholdId %v\n", value)
 }
 
-func dispatchZoneGroupTopologyZoneGroupName(value string) {
+func dispatchZoneGroupTopologyZoneGroupName(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyZoneGroupName %v\n", value)
 }
 
-func dispatchZoneGroupTopologyZoneGroupID(value string) {
+func dispatchZoneGroupTopologyZoneGroupID(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyZoneGroupID %v\n", value)
 }
 
-func dispatchZoneGroupTopologyZonePlayerUUIDsInGroup(value string) {
+func dispatchZoneGroupTopologyZonePlayerUUIDsInGroup(zp *ZonePlayer, value string) {
 	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyZonePlayerUUIDsInGroup %v\n", value)
 }
 
-func dispatchZoneGroupTopologyAreasUpdateID(value string) {
-	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyAreasUpdateID %v\n", value)
+func dispatchZoneGroupTopologyAreasUpdateID(zp *ZonePlayer, value string) {
+	if zp.AreasUpdateID == nil {
+		return
+	}
+	zp.AreasUpdateID(value)
 }
 
-func dispatchZoneGroupTopologySourceAreasUpdateID(value string) {
-	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologySourceAreasUpdateID %v\n", value)
+func dispatchZoneGroupTopologySourceAreasUpdateID(zp *ZonePlayer, value string) {
+	if zp.SourceAreasUpdateID == nil {
+		return
+	}
+	zp.SourceAreasUpdateID(value)
 }
 
-func dispatchZoneGroupTopologyNetsettingsUpdateID(value string) {
-	fmt.Fprintf(os.Stderr, "dispatchZoneGroupTopologyNetsettingsUpdateID %v\n", value)
+func dispatchZoneGroupTopologyNetsettingsUpdateID(zp *ZonePlayer, value string) {
+	if zp.NetsettingsUpdateID == nil {
+		return
+	}
+	zp.NetsettingsUpdateID(value)
 }

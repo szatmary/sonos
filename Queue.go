@@ -425,7 +425,7 @@ func QueueDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchQueueLastChange(*prop.LastChange) // string
+			dispatchQueueLastChange(zp, *prop.LastChange) // string
 		}
 	}
 }

@@ -111,7 +111,10 @@ type ZonePlayer struct {
 	VirtualLineIn         *VirtualLineInService
 	ZoneGroupTopology     *ZoneGroupTopologyService
 	// Callbaacks
-	ZoneGroupStateCallback func(*ZoneGroupState)
+	ZoneGroupState      func(*ZoneGroupState)
+	NetsettingsUpdateID func(string)
+	SourceAreasUpdateID func(string)
+	AreasUpdateID       func(string)
 }
 
 func NewZonePlayer(deviceDescriptionURL *url.URL) (*ZonePlayer, error) {

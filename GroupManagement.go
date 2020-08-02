@@ -208,15 +208,15 @@ func GroupManagementDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.GroupCoordinatorIsLocal != nil:
-			dispatchGroupManagementGroupCoordinatorIsLocal(*prop.GroupCoordinatorIsLocal) // bool
+			dispatchGroupManagementGroupCoordinatorIsLocal(zp, *prop.GroupCoordinatorIsLocal) // bool
 		case prop.LocalGroupUUID != nil:
-			dispatchGroupManagementLocalGroupUUID(*prop.LocalGroupUUID) // string
+			dispatchGroupManagementLocalGroupUUID(zp, *prop.LocalGroupUUID) // string
 		case prop.VirtualLineInGroupID != nil:
-			dispatchGroupManagementVirtualLineInGroupID(*prop.VirtualLineInGroupID) // string
+			dispatchGroupManagementVirtualLineInGroupID(zp, *prop.VirtualLineInGroupID) // string
 		case prop.ResetVolumeAfter != nil:
-			dispatchGroupManagementResetVolumeAfter(*prop.ResetVolumeAfter) // bool
+			dispatchGroupManagementResetVolumeAfter(zp, *prop.ResetVolumeAfter) // bool
 		case prop.VolumeAVTransportURI != nil:
-			dispatchGroupManagementVolumeAVTransportURI(*prop.VolumeAVTransportURI) // string
+			dispatchGroupManagementVolumeAVTransportURI(zp, *prop.VolumeAVTransportURI) // string
 		}
 	}
 }

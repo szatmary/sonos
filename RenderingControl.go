@@ -896,7 +896,7 @@ func RenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchRenderingControlLastChange(*prop.LastChange) // string
+			dispatchRenderingControlLastChange(zp, *prop.LastChange) // string
 		}
 	}
 }

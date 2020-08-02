@@ -182,11 +182,11 @@ func ConnectionManagerDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SourceProtocolInfo != nil:
-			dispatchConnectionManagerSourceProtocolInfo(*prop.SourceProtocolInfo) // string
+			dispatchConnectionManagerSourceProtocolInfo(zp, *prop.SourceProtocolInfo) // string
 		case prop.SinkProtocolInfo != nil:
-			dispatchConnectionManagerSinkProtocolInfo(*prop.SinkProtocolInfo) // string
+			dispatchConnectionManagerSinkProtocolInfo(zp, *prop.SinkProtocolInfo) // string
 		case prop.CurrentConnectionIDs != nil:
-			dispatchConnectionManagerCurrentConnectionIDs(*prop.CurrentConnectionIDs) // string
+			dispatchConnectionManagerCurrentConnectionIDs(zp, *prop.CurrentConnectionIDs) // string
 		}
 	}
 }

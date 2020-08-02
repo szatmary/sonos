@@ -256,11 +256,11 @@ func GroupRenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.GroupMute != nil:
-			dispatchGroupRenderingControlGroupMute(*prop.GroupMute) // bool
+			dispatchGroupRenderingControlGroupMute(zp, *prop.GroupMute) // bool
 		case prop.GroupVolume != nil:
-			dispatchGroupRenderingControlGroupVolume(*prop.GroupVolume) // uint16
+			dispatchGroupRenderingControlGroupVolume(zp, *prop.GroupVolume) // uint16
 		case prop.GroupVolumeChangeable != nil:
-			dispatchGroupRenderingControlGroupVolumeChangeable(*prop.GroupVolumeChangeable) // bool
+			dispatchGroupRenderingControlGroupVolumeChangeable(zp, *prop.GroupVolumeChangeable) // bool
 		}
 	}
 }

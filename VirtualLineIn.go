@@ -302,7 +302,7 @@ func VirtualLineInDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchVirtualLineInLastChange(*prop.LastChange) // string
+			dispatchVirtualLineInLastChange(zp, *prop.LastChange) // string
 		}
 	}
 }

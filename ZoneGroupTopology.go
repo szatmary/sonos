@@ -324,27 +324,27 @@ func ZoneGroupTopologyDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.AvailableSoftwareUpdate != nil:
-			dispatchZoneGroupTopologyAvailableSoftwareUpdate(*prop.AvailableSoftwareUpdate) // string
+			dispatchZoneGroupTopologyAvailableSoftwareUpdate(zp, *prop.AvailableSoftwareUpdate) // string
 		case prop.ZoneGroupState != nil:
-			dispatchZoneGroupTopologyZoneGroupState(*prop.ZoneGroupState) // string
+			dispatchZoneGroupTopologyZoneGroupState(zp, *prop.ZoneGroupState) // string
 		case prop.ThirdPartyMediaServersX != nil:
-			dispatchZoneGroupTopologyThirdPartyMediaServersX(*prop.ThirdPartyMediaServersX) // string
+			dispatchZoneGroupTopologyThirdPartyMediaServersX(zp, *prop.ThirdPartyMediaServersX) // string
 		case prop.AlarmRunSequence != nil:
-			dispatchZoneGroupTopologyAlarmRunSequence(*prop.AlarmRunSequence) // string
+			dispatchZoneGroupTopologyAlarmRunSequence(zp, *prop.AlarmRunSequence) // string
 		case prop.MuseHouseholdId != nil:
-			dispatchZoneGroupTopologyMuseHouseholdId(*prop.MuseHouseholdId) // string
+			dispatchZoneGroupTopologyMuseHouseholdId(zp, *prop.MuseHouseholdId) // string
 		case prop.ZoneGroupName != nil:
-			dispatchZoneGroupTopologyZoneGroupName(*prop.ZoneGroupName) // string
+			dispatchZoneGroupTopologyZoneGroupName(zp, *prop.ZoneGroupName) // string
 		case prop.ZoneGroupID != nil:
-			dispatchZoneGroupTopologyZoneGroupID(*prop.ZoneGroupID) // string
+			dispatchZoneGroupTopologyZoneGroupID(zp, *prop.ZoneGroupID) // string
 		case prop.ZonePlayerUUIDsInGroup != nil:
-			dispatchZoneGroupTopologyZonePlayerUUIDsInGroup(*prop.ZonePlayerUUIDsInGroup) // string
+			dispatchZoneGroupTopologyZonePlayerUUIDsInGroup(zp, *prop.ZonePlayerUUIDsInGroup) // string
 		case prop.AreasUpdateID != nil:
-			dispatchZoneGroupTopologyAreasUpdateID(*prop.AreasUpdateID) // string
+			dispatchZoneGroupTopologyAreasUpdateID(zp, *prop.AreasUpdateID) // string
 		case prop.SourceAreasUpdateID != nil:
-			dispatchZoneGroupTopologySourceAreasUpdateID(*prop.SourceAreasUpdateID) // string
+			dispatchZoneGroupTopologySourceAreasUpdateID(zp, *prop.SourceAreasUpdateID) // string
 		case prop.NetsettingsUpdateID != nil:
-			dispatchZoneGroupTopologyNetsettingsUpdateID(*prop.NetsettingsUpdateID) // string
+			dispatchZoneGroupTopologyNetsettingsUpdateID(zp, *prop.NetsettingsUpdateID) // string
 		}
 	}
 }

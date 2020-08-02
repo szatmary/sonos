@@ -1307,7 +1307,7 @@ func AVTransportDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchAVTransportLastChange(*prop.LastChange) // string
+			dispatchAVTransportLastChange(zp, *prop.LastChange) // string
 		}
 	}
 }

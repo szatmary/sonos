@@ -577,19 +577,19 @@ func AlarmClockDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.TimeZone != nil:
-			dispatchAlarmClockTimeZone(*prop.TimeZone) // string
+			dispatchAlarmClockTimeZone(zp, *prop.TimeZone) // string
 		case prop.TimeServer != nil:
-			dispatchAlarmClockTimeServer(*prop.TimeServer) // string
+			dispatchAlarmClockTimeServer(zp, *prop.TimeServer) // string
 		case prop.TimeGeneration != nil:
-			dispatchAlarmClockTimeGeneration(*prop.TimeGeneration) // uint32
+			dispatchAlarmClockTimeGeneration(zp, *prop.TimeGeneration) // uint32
 		case prop.AlarmListVersion != nil:
-			dispatchAlarmClockAlarmListVersion(*prop.AlarmListVersion) // string
+			dispatchAlarmClockAlarmListVersion(zp, *prop.AlarmListVersion) // string
 		case prop.DailyIndexRefreshTime != nil:
-			dispatchAlarmClockDailyIndexRefreshTime(*prop.DailyIndexRefreshTime) // string
+			dispatchAlarmClockDailyIndexRefreshTime(zp, *prop.DailyIndexRefreshTime) // string
 		case prop.TimeFormat != nil:
-			dispatchAlarmClockTimeFormat(*prop.TimeFormat) // string
+			dispatchAlarmClockTimeFormat(zp, *prop.TimeFormat) // string
 		case prop.DateFormat != nil:
-			dispatchAlarmClockDateFormat(*prop.DateFormat) // string
+			dispatchAlarmClockDateFormat(zp, *prop.DateFormat) // string
 		}
 	}
 }
