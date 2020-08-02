@@ -1,12 +1,21 @@
 package sonos
 
 import (
+	"bufio"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
+	"os"
 )
+
+type SonosService interface {
+	ControlEndpoint() *url.URL
+	EventEndpoint() *url.URL
+}
 
 type SpecVersion struct {
 	XMLName xml.Name `xml:"specVersion"`
@@ -87,7 +96,7 @@ type ZonePlayer struct {
 	Root                 *Root
 	HttpClient           *http.Client
 	DeviceDescriptionURL *url.URL
-	// services
+	// Services             []SonosService
 	AlarmClock            *AlarmClockService
 	AVTransport           *AVTransportService
 	ConnectionManager     *ConnectionManagerService
@@ -148,74 +157,55 @@ func NewZonePlayer(deviceDescriptionURL *url.URL) (*ZonePlayer, error) {
 
 // go http library does some stuff that make upnp scbscriptions difficult
 // hecce here we just open a tcp connection and fire off the request manually
-func (s *Sonos) subscribe(zp *ZonePlayer) error {
-	return nil
-	// sub := func(serialNum string, eventEndpoint *url.URL) error {
-	// 	host := eventEndpoint.Hostname() + ":" + eventEndpoint.Port()
-	// 	conn, err := net.Dial("tcp", host)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	// fmt.Sprintf("%s:%d", GetLocalAddress(eventEndpoint.Hostname()), s.httpListener.Addr().Port),
-	// 	callback := url.URL{
-	// 		Scheme:   "http",
-	// 		Host:     s.httpListener.Addr().String(),
-	// 		Fragment: serialNum,
-	// 	}
+func (s *Sonos) SubscribeAll(zp *ZonePlayer) {
+	s.Subscribe(zp, zp.AlarmClock)
+	s.Subscribe(zp, zp.AVTransport)
+	s.Subscribe(zp, zp.ConnectionManager)
+	s.Subscribe(zp, zp.ContentDirectory)
+	s.Subscribe(zp, zp.DeviceProperties)
+	s.Subscribe(zp, zp.GroupManagement)
+	s.Subscribe(zp, zp.GroupRenderingControl)
+	s.Subscribe(zp, zp.MusicServices)
+	s.Subscribe(zp, zp.Queue)
+	s.Subscribe(zp, zp.RenderingControl)
+	s.Subscribe(zp, zp.SystemProperties)
+	s.Subscribe(zp, zp.VirtualLineIn)
+	s.Subscribe(zp, zp.ZoneGroupTopology)
+	s.Subscribe(zp, zp.RenderingControl)
+}
 
-	// 	var req string
-	// 	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", eventEndpoint.Path)
-	// 	req += fmt.Sprintf("HOST: %s\r\n", host)
-	// 	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 Gonos/1.0\r\n")
-	// 	req += fmt.Sprintf("CALLBACK: <%s>\r\n", callback.String())
-	// 	req += fmt.Sprintf("NT: upnp:event\r\n")
-	// 	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
-	// 	fmt.Fprintf(conn, req+"\r\n")
-	// 	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer res.Body.Close()
-	// 	body, err := ioutil.ReadAll(res.Body)
-	// 	if 200 != res.StatusCode {
-	// 		fmt.Printf("%v\n", res)
-	// 		return errors.New(string(body))
-	// 	}
+func (s *Sonos) Subscribe(zp *ZonePlayer, service SonosService) error {
 
-	// 	return nil
-	// }
-
-	callbackURL := url.URL{
-		Scheme:   "http",
-		Fragment: zp.SerialNum(),
-		Host:     s.httpListener.Addr().String(),
+	conn, err := net.Dial("tcp", service.EventEndpoint().Host)
+	host := fmt.Sprintf("%s:%d", conn.LocalAddr().(*net.TCPAddr).IP.String(), s.httpListener.Addr().(*net.TCPAddr).Port)
+	calbackUrl := url.URL{
+		Scheme: "http",
+		Host:   host,
+		Path:   service.EventEndpoint().Path,
 	}
-	callbackURL.Path = zp.AlarmClock.EventEndpoint.Path
-	zp.AlarmClock.AlarmClockSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.AVTransport.AVTransportSubscribe(callbackURL)
-	callbackURL.Path = zp.ConnectionManager.EventEndpoint.Path
-	zp.ConnectionManager.ConnectionManagerSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.ContentDirectory.ContentDirectorySubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.DeviceProperties.DevicePropertiesSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.GroupManagement.GroupManagementSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.GroupRenderingControl.GroupRenderingControlSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.MusicServices.MusicServicesSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.Queue.QueueSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.RenderingControl.RenderingControlSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.SystemProperties.SystemPropertiesSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.VirtualLineIn.VirtualLineInSubscribe(callbackURL)
-	callbackURL.Path = zp.AVTransport.EventEndpoint.Path
-	zp.ZoneGroupTopology.ZoneGroupTopologySubscribe(callbackURL)
+	var req string
+	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", service.EventEndpoint().String())
+	req += fmt.Sprintf("HOST: %s\r\n", service.EventEndpoint().Host)
+	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 sonos.szatmary.com.github/2.0\r\n")
+	req += fmt.Sprintf("CALLBACK: <%s>\r\n", calbackUrl.String())
+	req += fmt.Sprintf("NT: upnp:event\r\n")
+	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%v\n", req)
+	fmt.Fprintf(conn, req+"\r\n")
+	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	fmt.Printf("%v\n", body)
+	if 200 != res.StatusCode {
+		fmt.Printf("%v\n", res)
+		return errors.New(string(body))
+	}
 	return nil
 }
 
@@ -318,168 +308,251 @@ func (zp *ZonePlayer) EventCallback(evt interface{}) {
 
 // Event handlers
 func (z *ZonePlayer) AVTransportLastChangeEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "AVTransportLastChangeEvent: %v\n", evt)
 }
 func (z *ZonePlayer) AlarmClockTimeZoneEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "AlarmClockTimeZoneEvent: %v\n", evt)
 }
 func (z *ZonePlayer) AlarmClockTimeServerEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "AlarmClockTimeServerEvent: %v\n", evt)
 }
 func (z *ZonePlayer) AlarmClockTimeGenerationEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "AlarmClockTimeGenerationEvent: %v\n", evt)
 }
 func (z *ZonePlayer) AlarmClockAlarmListVersionEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "AlarmClockAlarmListVersionEvent: %v\n", evt)
 }
 func (z *ZonePlayer) AlarmClockDailyIndexRefreshTimeEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "AlarmClockDailyIndexRefreshTimeEvent: %v\n", evt)
 }
 func (z *ZonePlayer) AlarmClockTimeFormatEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) AlarmClockDateFormatEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ConnectionManagerSourceProtocolInfoEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ConnectionManagerSinkProtocolInfoEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ConnectionManagerCurrentConnectionIDsEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectorySystemUpdateIDEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryContainerUpdateIDsEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryShareIndexInProgressEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryShareIndexLastErrorEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryUserRadioUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectorySavedQueuesUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryShareListUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryRecentlyPlayedUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryBrowseableEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryRadioFavoritesUpdateIDEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryRadioLocationUpdateIDEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryFavoritesUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ContentDirectoryFavoritePresetsUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesSettingsReplicationStateEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesZoneNameEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesIconEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesConfigurationEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesInvisibleEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesIsZoneBridgeEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesAirPlayEnabledEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesSupportsAudioInEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesSupportsAudioClipEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesIsIdleEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesMoreInfoEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesChannelMapSetEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesHTSatChanMapSetEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesHTFreqEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesHTBondedZoneCommitStateEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesOrientationEvent(evt int32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesLastChangedPlayStateEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesRoomCalibrationStateEvent(evt int32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesAvailableRoomCalibrationEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesTVConfigurationErrorEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesHdmiCecAvailableEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesWirelessModeEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesWirelessLeafOnlyEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesHasConfiguredSSIDEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesChannelFreqEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesBehindWifiExtenderEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesWifiEnabledEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesConfigModeEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesSecureRegStateEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesVoiceConfigStateEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) DevicePropertiesMicEnabledEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupRenderingControlGroupMuteEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupRenderingControlGroupVolumeEvent(evt uint16) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupRenderingControlGroupVolumeChangeableEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupManagementGroupCoordinatorIsLocalEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupManagementLocalGroupUUIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupManagementVirtualLineInGroupIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupManagementResetVolumeAfterEvent(evt bool) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) GroupManagementVolumeAVTransportURIEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) MusicServicesServiceListVersionEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) QueueLastChangeEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) RenderingControlLastChangeEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) SystemPropertiesCustomerIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) SystemPropertiesUpdateIDEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) SystemPropertiesUpdateIDXEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) SystemPropertiesVoiceUpdateIDEvent(evt uint32) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) SystemPropertiesThirdPartyHashEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) VirtualLineInLastChangeEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyAvailableSoftwareUpdateEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyZoneGroupStateEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyThirdPartyMediaServersXEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyAlarmRunSequenceEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyMuseHouseholdIdEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyZoneGroupNameEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyZoneGroupIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyZonePlayerUUIDsInGroupEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyAreasUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologySourceAreasUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }
 func (z *ZonePlayer) ZoneGroupTopologyNetsettingsUpdateIDEvent(evt string) {
+	fmt.Fprintf(os.Stderr, "%v\n", evt)
 }

@@ -1,29 +1,32 @@
 package sonos
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 )
 
 type DevicePropertiesService struct {
-	ControlEndpoint *url.URL
-	EventEndpoint   *url.URL
+	controlEndpoint *url.URL
+	eventEndpoint   *url.URL
 }
 
 func NewDevicePropertiesService(deviceUrl *url.URL) *DevicePropertiesService {
 	c, _ := url.Parse("/DeviceProperties/Control")
 	e, _ := url.Parse("/DeviceProperties/Event")
 	return &DevicePropertiesService{
-		ControlEndpoint: deviceUrl.ResolveReference(c),
-		EventEndpoint:   deviceUrl.ResolveReference(e),
+		controlEndpoint: deviceUrl.ResolveReference(c),
+		eventEndpoint:   deviceUrl.ResolveReference(e),
 	}
+}
+func (s *DevicePropertiesService) ControlEndpoint() *url.URL {
+	return s.controlEndpoint
+}
+func (s *DevicePropertiesService) EventEndpoint() *url.URL {
+	return s.eventEndpoint
 }
 
 type DevicePropertiesEnvelope struct {
@@ -101,7 +104,7 @@ func (s *DevicePropertiesService) _DevicePropertiesExec(soapAction string, httpC
 		return nil, err
 	}
 	// fmt.Printf("soapAction %s: postBody %v\n", soapAction, string(postBody))
-	req, err := http.NewRequest("POST", s.ControlEndpoint.String(), bytes.NewBuffer(postBody))
+	req, err := http.NewRequest("POST", s.controlEndpoint.String(), bytes.NewBuffer(postBody))
 	if err != nil {
 		return nil, err
 	}
@@ -727,31 +730,6 @@ func (s *DevicePropertiesService) GetButtonLockState(httpClient *http.Client, ar
 		return nil, errors.New("unexpected respose from service")
 	}
 	return r.Body.GetButtonLockState, nil
-}
-func (s *DevicePropertiesService) DevicePropertiesSubscribe(callback url.URL) error {
-	var req string
-	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", s.EventEndpoint.String())
-	req += fmt.Sprintf("HOST: %s\r\n", s.EventEndpoint.Host)
-	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 Gonos/1.0\r\n")
-	req += fmt.Sprintf("CALLBACK: <%s>\r\n", callback.String())
-	req += fmt.Sprintf("NT: upnp:event\r\n")
-	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
-	conn, err := net.Dial("tcp", s.EventEndpoint.Host)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(conn, req+"\r\n")
-	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if 200 != res.StatusCode {
-		fmt.Printf("%v\n", res)
-		return errors.New(string(body))
-	}
-	return nil
 }
 
 // Events

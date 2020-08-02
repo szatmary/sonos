@@ -1,29 +1,32 @@
 package sonos
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 )
 
 type AlarmClockService struct {
-	ControlEndpoint *url.URL
-	EventEndpoint   *url.URL
+	controlEndpoint *url.URL
+	eventEndpoint   *url.URL
 }
 
 func NewAlarmClockService(deviceUrl *url.URL) *AlarmClockService {
 	c, _ := url.Parse("/AlarmClock/Control")
 	e, _ := url.Parse("/AlarmClock/Event")
 	return &AlarmClockService{
-		ControlEndpoint: deviceUrl.ResolveReference(c),
-		EventEndpoint:   deviceUrl.ResolveReference(e),
+		controlEndpoint: deviceUrl.ResolveReference(c),
+		eventEndpoint:   deviceUrl.ResolveReference(e),
 	}
+}
+func (s *AlarmClockService) ControlEndpoint() *url.URL {
+	return s.controlEndpoint
+}
+func (s *AlarmClockService) EventEndpoint() *url.URL {
+	return s.eventEndpoint
 }
 
 type AlarmClockEnvelope struct {
@@ -85,7 +88,7 @@ func (s *AlarmClockService) _AlarmClockExec(soapAction string, httpClient *http.
 		return nil, err
 	}
 	// fmt.Printf("soapAction %s: postBody %v\n", soapAction, string(postBody))
-	req, err := http.NewRequest("POST", s.ControlEndpoint.String(), bytes.NewBuffer(postBody))
+	req, err := http.NewRequest("POST", s.controlEndpoint.String(), bytes.NewBuffer(postBody))
 	if err != nil {
 		return nil, err
 	}
@@ -547,31 +550,6 @@ func (s *AlarmClockService) GetDailyIndexRefreshTime(httpClient *http.Client, ar
 		return nil, errors.New("unexpected respose from service")
 	}
 	return r.Body.GetDailyIndexRefreshTime, nil
-}
-func (s *AlarmClockService) AlarmClockSubscribe(callback url.URL) error {
-	var req string
-	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", s.EventEndpoint.String())
-	req += fmt.Sprintf("HOST: %s\r\n", s.EventEndpoint.Host)
-	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 Gonos/1.0\r\n")
-	req += fmt.Sprintf("CALLBACK: <%s>\r\n", callback.String())
-	req += fmt.Sprintf("NT: upnp:event\r\n")
-	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
-	conn, err := net.Dial("tcp", s.EventEndpoint.Host)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(conn, req+"\r\n")
-	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if 200 != res.StatusCode {
-		fmt.Printf("%v\n", res)
-		return errors.New(string(body))
-	}
-	return nil
 }
 
 // Events

@@ -106,7 +106,7 @@ func (s *Scpd) GetStateVariable(name string) *StateVariable {
 	return nil
 }
 
-func MakeServiceApi(ServiceName, serviceControlEndpoint, serviceEventEndpoint, xmlFile string) []byte {
+func MakeServiceApi(ServiceName, servicecontrolEndpoint, serviceeventEndpoint, xmlFile string) []byte {
 	var s Scpd
 	scdp, err := ioutil.ReadFile(xmlFile)
 	if err != nil {
@@ -128,25 +128,29 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"fmt"
-	"bufio"
-	"net"
 )
 
 type %sService struct {
-	ControlEndpoint *url.URL
-	EventEndpoint   *url.URL
+	controlEndpoint *url.URL
+	eventEndpoint   *url.URL
 }
 
 func New%sService(deviceUrl *url.URL) *%sService {
 	c, _ := url.Parse("%s")
 	e, _ := url.Parse("%s")
 	return &%sService{
-		ControlEndpoint: deviceUrl.ResolveReference(c),
-		EventEndpoint:   deviceUrl.ResolveReference(e),
+		controlEndpoint: deviceUrl.ResolveReference(c),
+		eventEndpoint:   deviceUrl.ResolveReference(e),
 	}
 }
-`, ServiceName, ServiceName, ServiceName, serviceControlEndpoint, serviceEventEndpoint, ServiceName)
+func (s *%sService) ControlEndpoint() *url.URL {
+	return s.controlEndpoint
+}
+func (s *%sService) EventEndpoint() *url.URL {
+	return s.eventEndpoint
+}
+
+`, ServiceName, ServiceName, ServiceName, servicecontrolEndpoint, serviceeventEndpoint, ServiceName, ServiceName, ServiceName)
 
 	// Martial structs
 	fmt.Fprintf(buf, "type %sEnvelope struct {\n", ServiceName)
@@ -185,7 +189,7 @@ func New%sService(deviceUrl *url.URL) *%sService {
 		return nil, err
 	}
 	// fmt.Printf("soapAction %%s: postBody %%v\n", soapAction, string(postBody))
-	req, err := http.NewRequest("POST", s.ControlEndpoint.String(), bytes.NewBuffer(postBody))
+	req, err := http.NewRequest("POST", s.controlEndpoint.String(), bytes.NewBuffer(postBody))
 	if err != nil {
 		return nil, err
 	}
@@ -278,32 +282,32 @@ func New%sService(deviceUrl *url.URL) *%sService {
 		return buf.Bytes()
 	}
 
-	fmt.Fprintf(buf, `func (s *%sService) %sSubscribe(callback url.URL) error {`, ServiceName, ServiceName)
-	fmt.Fprint(buf, `
-	var req string
-	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", s.EventEndpoint.String())
-	req += fmt.Sprintf("HOST: %s\r\n", s.EventEndpoint.Host)
-	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 Gonos/1.0\r\n")
-	req += fmt.Sprintf("CALLBACK: <%s>\r\n", callback.String())
-	req += fmt.Sprintf("NT: upnp:event\r\n")
-	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
-	conn, err := net.Dial("tcp", s.EventEndpoint.Host)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(conn, req+"\r\n")
-	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if 200 != res.StatusCode {
-		fmt.Printf("%v\n", res)
-		return errors.New(string(body))
-	}
-	return nil
-}`)
+	// 	fmt.Fprintf(buf, `func (s *%sService) %sSubscribe(callback url.URL) error {`, ServiceName, ServiceName)
+	// 	fmt.Fprint(buf, `
+	// 	var req string
+	// 	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", s.eventEndpoint.String())
+	// 	req += fmt.Sprintf("HOST: %s\r\n", s.eventEndpoint.Host)
+	// 	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 sonos.szatmary.github.com/1.0\r\n")
+	// 	req += fmt.Sprintf("CALLBACK: <%s>\r\n", callback.String())
+	// 	req += fmt.Sprintf("NT: upnp:event\r\n")
+	// 	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
+	// 	conn, err := net.Dial("tcp", s.eventEndpoint.Host)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	fmt.Fprintf(conn, req+"\r\n")
+	// 	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer res.Body.Close()
+	// 	body, err := ioutil.ReadAll(res.Body)
+	// 	if 200 != res.StatusCode {
+	// 		fmt.Printf("%v\n", res)
+	// 		return errors.New(string(body))
+	// 	}
+	// 	return nil
+	// }`)
 
 	fmt.Fprint(buf, "\n// Events\n")
 	for _, sv := range s.StateVariables {

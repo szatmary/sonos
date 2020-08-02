@@ -10,17 +10,23 @@ import (
 )
 
 type QPlayService struct {
-	ControlEndpoint *url.URL
-	EventEndpoint   *url.URL
+	controlEndpoint *url.URL
+	eventEndpoint   *url.URL
 }
 
 func NewQPlayService(deviceUrl *url.URL) *QPlayService {
 	c, _ := url.Parse("/QPlay/Control")
 	e, _ := url.Parse("/QPlay/Event")
 	return &QPlayService{
-		ControlEndpoint: deviceUrl.ResolveReference(c),
-		EventEndpoint:   deviceUrl.ResolveReference(e),
+		controlEndpoint: deviceUrl.ResolveReference(c),
+		eventEndpoint:   deviceUrl.ResolveReference(e),
 	}
+}
+func (s *QPlayService) ControlEndpoint() *url.URL {
+	return s.controlEndpoint
+}
+func (s *QPlayService) EventEndpoint() *url.URL {
+	return s.eventEndpoint
 }
 
 type QPlayEnvelope struct {
@@ -50,7 +56,7 @@ func (s *QPlayService) _QPlayExec(soapAction string, httpClient *http.Client, en
 		return nil, err
 	}
 	// fmt.Printf("soapAction %s: postBody %v\n", soapAction, string(postBody))
-	req, err := http.NewRequest("POST", s.ControlEndpoint.String(), bytes.NewBuffer(postBody))
+	req, err := http.NewRequest("POST", s.controlEndpoint.String(), bytes.NewBuffer(postBody))
 	if err != nil {
 		return nil, err
 	}

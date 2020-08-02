@@ -17,7 +17,11 @@ const (
 	bcastaddr = "239.255.255.250:1900"
 )
 
-type serviceDispatch struct {
+// type serviceDispatch struct {
+// }
+
+type Args struct {
+	FoundZonePlayer func(*Sonos, *ZonePlayer)
 }
 
 type Sonos struct {
@@ -25,28 +29,31 @@ type Sonos struct {
 	udpConn      *net.UDPConn
 	httpListener net.Listener
 	zonePlayers  sync.Map
+	args         Args
 }
 
-func NewSonos(found func(*ZonePlayer)) (*Sonos, error) {
+func NewSonos(args Args) (*Sonos, error) {
+	var err error
+	s := &Sonos{args: args}
 
 	// create listener for events
-	httpListener, err := net.Listen("tcp", ":0")
+	s.httpListener, err = net.Listen("tcp", ":0")
 	if err != nil {
 		return nil, err
 	}
 
-	// go func() {
-	// 	http.Serve(httpListener, &s)
-	// }()
+	go func() {
+		http.Serve(s.httpListener, s)
+	}()
 	// Create listener for M-SEARCH
-	udpConn, err := net.ListenUDP("udp", &net.UDPAddr{IP: []byte{0, 0, 0, 0}, Port: 0, Zone: ""})
+	s.udpConn, err = net.ListenUDP("udp", &net.UDPAddr{IP: []byte{0, 0, 0, 0}, Port: 0, Zone: ""})
 	if err != nil {
 		return nil, err
 	}
 
 	go func() {
 		// TODO Dont let this leak, use a contect to shut it down
-		udpReader := bufio.NewReader(udpConn)
+		udpReader := bufio.NewReader(s.udpConn)
 		for {
 			response, err := http.ReadResponse(udpReader, nil)
 			if err != nil {
@@ -56,25 +63,41 @@ func NewSonos(found func(*ZonePlayer)) (*Sonos, error) {
 			if err != nil {
 				continue
 			}
-			zp, err := NewZonePlayer(location)
+			newZonePlayer, err := NewZonePlayer(location)
 			if err != nil {
 				continue
 			}
-			if zp.IsCoordinator() {
-				found(zp)
-				// fmt.Printf("+++%s\n", GetLocalAddress())
-				// err := zp.RenderingControl.Subscribe(zp.HttpClient, GetLocalAddress())
+			if newZonePlayer.IsCoordinator() {
+				zonePlayer, loaded := s.zonePlayers.LoadOrStore(newZonePlayer.SerialNum(), newZonePlayer)
+				if !loaded {
+					args.FoundZonePlayer(s, zonePlayer.(*ZonePlayer))
+				}
+				// TODO handle zone players disappearing
 			}
 		}
 	}()
 
-	s := Sonos{
-		zonePlayers:  sync.Map{},
-		udpConn:      udpConn,
-		httpListener: httpListener,
-	}
 	s.search()
-	return &s, nil
+	return s, nil
+}
+
+func (s *Sonos) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	// fmt.Printf("%v\n", request)
+	// if player, ok := s.zonePlayers.Load(request.URL.Fragment); ok {
+	// 	player
+	// }
+
+	fmt.Printf("P: %s\nF: %s\n", request.URL.Path, request.URL.Fragment)
+
+	defer request.Body.Close()
+	// requestBody, err := ioutil.ReadAll(request.Body)
+	// if err != nil {
+	// 	response.WriteHeader(500)
+	// 	return
+	// }
+
+	// fmt.Printf("body: %v\n", string(requestBody))
+	response.WriteHeader(200)
 }
 
 func (s *Sonos) HttpPort() int {
@@ -104,10 +127,12 @@ func (s *Sonos) search() error {
 func FindRoom(room string, timeout time.Duration) (*ZonePlayer, error) {
 	c := make(chan *ZonePlayer)
 	defer close(c)
-	son, err := NewSonos(func(zp *ZonePlayer) {
-		if zp.RoomName() == room {
-			c <- zp
-		}
+	son, err := NewSonos(Args{
+		FoundZonePlayer: func(s *Sonos, zp *ZonePlayer) {
+			if zp.RoomName() == room {
+				c <- zp
+			}
+		},
 	})
 	if err != nil {
 		return nil, err
