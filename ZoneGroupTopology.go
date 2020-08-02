@@ -295,36 +295,24 @@ func (s *ZoneGroupTopologyService) GetZoneGroupState(httpClient *http.Client, ar
 	return r.Body.GetZoneGroupState, nil
 }
 
-// Events
-type ZoneGroupTopologyAvailableSoftwareUpdate string
-type ZoneGroupTopologyZoneGroupState string
-type ZoneGroupTopologyThirdPartyMediaServersX string
-type ZoneGroupTopologyAlarmRunSequence string
-type ZoneGroupTopologyMuseHouseholdId string
-type ZoneGroupTopologyZoneGroupName string
-type ZoneGroupTopologyZoneGroupID string
-type ZoneGroupTopologyZonePlayerUUIDsInGroup string
-type ZoneGroupTopologyAreasUpdateID string
-type ZoneGroupTopologySourceAreasUpdateID string
-type ZoneGroupTopologyNetsettingsUpdateID string
 type ZoneGroupTopologyUpnpEvent struct {
 	XMLName      xml.Name                    `xml:"propertyset"`
 	XMLNameSpace string                      `xml:"xmlns:e,attr"`
 	Properties   []ZoneGroupTopologyProperty `xml:"property"`
 }
 type ZoneGroupTopologyProperty struct {
-	XMLName                 xml.Name                                  `xml:"property"`
-	AvailableSoftwareUpdate *ZoneGroupTopologyAvailableSoftwareUpdate `xml:"AvailableSoftwareUpdate"`
-	ZoneGroupState          *ZoneGroupTopologyZoneGroupState          `xml:"ZoneGroupState"`
-	ThirdPartyMediaServersX *ZoneGroupTopologyThirdPartyMediaServersX `xml:"ThirdPartyMediaServersX"`
-	AlarmRunSequence        *ZoneGroupTopologyAlarmRunSequence        `xml:"AlarmRunSequence"`
-	MuseHouseholdId         *ZoneGroupTopologyMuseHouseholdId         `xml:"MuseHouseholdId"`
-	ZoneGroupName           *ZoneGroupTopologyZoneGroupName           `xml:"ZoneGroupName"`
-	ZoneGroupID             *ZoneGroupTopologyZoneGroupID             `xml:"ZoneGroupID"`
-	ZonePlayerUUIDsInGroup  *ZoneGroupTopologyZonePlayerUUIDsInGroup  `xml:"ZonePlayerUUIDsInGroup"`
-	AreasUpdateID           *ZoneGroupTopologyAreasUpdateID           `xml:"AreasUpdateID"`
-	SourceAreasUpdateID     *ZoneGroupTopologySourceAreasUpdateID     `xml:"SourceAreasUpdateID"`
-	NetsettingsUpdateID     *ZoneGroupTopologyNetsettingsUpdateID     `xml:"NetsettingsUpdateID"`
+	XMLName                 xml.Name `xml:"property"`
+	AvailableSoftwareUpdate *string  `xml:"AvailableSoftwareUpdate"`
+	ZoneGroupState          *string  `xml:"ZoneGroupState"`
+	ThirdPartyMediaServersX *string  `xml:"ThirdPartyMediaServersX"`
+	AlarmRunSequence        *string  `xml:"AlarmRunSequence"`
+	MuseHouseholdId         *string  `xml:"MuseHouseholdId"`
+	ZoneGroupName           *string  `xml:"ZoneGroupName"`
+	ZoneGroupID             *string  `xml:"ZoneGroupID"`
+	ZonePlayerUUIDsInGroup  *string  `xml:"ZonePlayerUUIDsInGroup"`
+	AreasUpdateID           *string  `xml:"AreasUpdateID"`
+	SourceAreasUpdateID     *string  `xml:"SourceAreasUpdateID"`
+	NetsettingsUpdateID     *string  `xml:"NetsettingsUpdateID"`
 }
 
 func ZoneGroupTopologyDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -336,27 +324,27 @@ func ZoneGroupTopologyDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.AvailableSoftwareUpdate != nil:
-			zp.EventCallback(*prop.AvailableSoftwareUpdate)
+			dispatchZoneGroupTopologyAvailableSoftwareUpdate(*prop.AvailableSoftwareUpdate) // string
 		case prop.ZoneGroupState != nil:
-			zp.EventCallback(*prop.ZoneGroupState)
+			dispatchZoneGroupTopologyZoneGroupState(*prop.ZoneGroupState) // string
 		case prop.ThirdPartyMediaServersX != nil:
-			zp.EventCallback(*prop.ThirdPartyMediaServersX)
+			dispatchZoneGroupTopologyThirdPartyMediaServersX(*prop.ThirdPartyMediaServersX) // string
 		case prop.AlarmRunSequence != nil:
-			zp.EventCallback(*prop.AlarmRunSequence)
+			dispatchZoneGroupTopologyAlarmRunSequence(*prop.AlarmRunSequence) // string
 		case prop.MuseHouseholdId != nil:
-			zp.EventCallback(*prop.MuseHouseholdId)
+			dispatchZoneGroupTopologyMuseHouseholdId(*prop.MuseHouseholdId) // string
 		case prop.ZoneGroupName != nil:
-			zp.EventCallback(*prop.ZoneGroupName)
+			dispatchZoneGroupTopologyZoneGroupName(*prop.ZoneGroupName) // string
 		case prop.ZoneGroupID != nil:
-			zp.EventCallback(*prop.ZoneGroupID)
+			dispatchZoneGroupTopologyZoneGroupID(*prop.ZoneGroupID) // string
 		case prop.ZonePlayerUUIDsInGroup != nil:
-			zp.EventCallback(*prop.ZonePlayerUUIDsInGroup)
+			dispatchZoneGroupTopologyZonePlayerUUIDsInGroup(*prop.ZonePlayerUUIDsInGroup) // string
 		case prop.AreasUpdateID != nil:
-			zp.EventCallback(*prop.AreasUpdateID)
+			dispatchZoneGroupTopologyAreasUpdateID(*prop.AreasUpdateID) // string
 		case prop.SourceAreasUpdateID != nil:
-			zp.EventCallback(*prop.SourceAreasUpdateID)
+			dispatchZoneGroupTopologySourceAreasUpdateID(*prop.SourceAreasUpdateID) // string
 		case prop.NetsettingsUpdateID != nil:
-			zp.EventCallback(*prop.NetsettingsUpdateID)
+			dispatchZoneGroupTopologyNetsettingsUpdateID(*prop.NetsettingsUpdateID) // string
 		}
 	}
 }

@@ -156,16 +156,14 @@ func (s *MusicServicesService) UpdateAvailableServices(httpClient *http.Client, 
 	return r.Body.UpdateAvailableServices, nil
 }
 
-// Events
-type MusicServicesServiceListVersion string
 type MusicServicesUpnpEvent struct {
 	XMLName      xml.Name                `xml:"propertyset"`
 	XMLNameSpace string                  `xml:"xmlns:e,attr"`
 	Properties   []MusicServicesProperty `xml:"property"`
 }
 type MusicServicesProperty struct {
-	XMLName            xml.Name                         `xml:"property"`
-	ServiceListVersion *MusicServicesServiceListVersion `xml:"ServiceListVersion"`
+	XMLName            xml.Name `xml:"property"`
+	ServiceListVersion *string  `xml:"ServiceListVersion"`
 }
 
 func MusicServicesDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -177,7 +175,7 @@ func MusicServicesDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.ServiceListVersion != nil:
-			zp.EventCallback(*prop.ServiceListVersion)
+			dispatchMusicServicesServiceListVersion(*prop.ServiceListVersion) // string
 		}
 	}
 }

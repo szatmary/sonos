@@ -283,16 +283,14 @@ func (s *VirtualLineInService) SetVolume(httpClient *http.Client, args *VirtualL
 	return r.Body.SetVolume, nil
 }
 
-// Events
-type VirtualLineInLastChange string
 type VirtualLineInUpnpEvent struct {
 	XMLName      xml.Name                `xml:"propertyset"`
 	XMLNameSpace string                  `xml:"xmlns:e,attr"`
 	Properties   []VirtualLineInProperty `xml:"property"`
 }
 type VirtualLineInProperty struct {
-	XMLName    xml.Name                 `xml:"property"`
-	LastChange *VirtualLineInLastChange `xml:"LastChange"`
+	XMLName    xml.Name `xml:"property"`
+	LastChange *string  `xml:"LastChange"`
 }
 
 func VirtualLineInDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -304,7 +302,7 @@ func VirtualLineInDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			zp.EventCallback(*prop.LastChange)
+			dispatchVirtualLineInLastChange(*prop.LastChange) // string
 		}
 	}
 }

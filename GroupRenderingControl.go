@@ -235,20 +235,16 @@ func (s *GroupRenderingControlService) SnapshotGroupVolume(httpClient *http.Clie
 	return r.Body.SnapshotGroupVolume, nil
 }
 
-// Events
-type GroupRenderingControlGroupMute bool
-type GroupRenderingControlGroupVolume uint16
-type GroupRenderingControlGroupVolumeChangeable bool
 type GroupRenderingControlUpnpEvent struct {
 	XMLName      xml.Name                        `xml:"propertyset"`
 	XMLNameSpace string                          `xml:"xmlns:e,attr"`
 	Properties   []GroupRenderingControlProperty `xml:"property"`
 }
 type GroupRenderingControlProperty struct {
-	XMLName               xml.Name                                    `xml:"property"`
-	GroupMute             *GroupRenderingControlGroupMute             `xml:"GroupMute"`
-	GroupVolume           *GroupRenderingControlGroupVolume           `xml:"GroupVolume"`
-	GroupVolumeChangeable *GroupRenderingControlGroupVolumeChangeable `xml:"GroupVolumeChangeable"`
+	XMLName               xml.Name `xml:"property"`
+	GroupMute             *bool    `xml:"GroupMute"`
+	GroupVolume           *uint16  `xml:"GroupVolume"`
+	GroupVolumeChangeable *bool    `xml:"GroupVolumeChangeable"`
 }
 
 func GroupRenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -260,11 +256,11 @@ func GroupRenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.GroupMute != nil:
-			zp.EventCallback(*prop.GroupMute)
+			dispatchGroupRenderingControlGroupMute(*prop.GroupMute) // bool
 		case prop.GroupVolume != nil:
-			zp.EventCallback(*prop.GroupVolume)
+			dispatchGroupRenderingControlGroupVolume(*prop.GroupVolume) // uint16
 		case prop.GroupVolumeChangeable != nil:
-			zp.EventCallback(*prop.GroupVolumeChangeable)
+			dispatchGroupRenderingControlGroupVolumeChangeable(*prop.GroupVolumeChangeable) // bool
 		}
 	}
 }

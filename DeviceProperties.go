@@ -732,76 +732,44 @@ func (s *DevicePropertiesService) GetButtonLockState(httpClient *http.Client, ar
 	return r.Body.GetButtonLockState, nil
 }
 
-// Events
-type DevicePropertiesSettingsReplicationState string
-type DevicePropertiesZoneName string
-type DevicePropertiesIcon string
-type DevicePropertiesConfiguration string
-type DevicePropertiesInvisible bool
-type DevicePropertiesIsZoneBridge bool
-type DevicePropertiesAirPlayEnabled bool
-type DevicePropertiesSupportsAudioIn bool
-type DevicePropertiesSupportsAudioClip bool
-type DevicePropertiesIsIdle bool
-type DevicePropertiesMoreInfo string
-type DevicePropertiesChannelMapSet string
-type DevicePropertiesHTSatChanMapSet string
-type DevicePropertiesHTFreq uint32
-type DevicePropertiesHTBondedZoneCommitState uint32
-type DevicePropertiesOrientation int32
-type DevicePropertiesLastChangedPlayState string
-type DevicePropertiesRoomCalibrationState int32
-type DevicePropertiesAvailableRoomCalibration string
-type DevicePropertiesTVConfigurationError bool
-type DevicePropertiesHdmiCecAvailable bool
-type DevicePropertiesWirelessMode uint32
-type DevicePropertiesWirelessLeafOnly bool
-type DevicePropertiesHasConfiguredSSID bool
-type DevicePropertiesChannelFreq uint32
-type DevicePropertiesBehindWifiExtender uint32
-type DevicePropertiesWifiEnabled bool
-type DevicePropertiesConfigMode string
-type DevicePropertiesSecureRegState uint32
-type DevicePropertiesVoiceConfigState uint32
-type DevicePropertiesMicEnabled uint32
 type DevicePropertiesUpnpEvent struct {
 	XMLName      xml.Name                   `xml:"propertyset"`
 	XMLNameSpace string                     `xml:"xmlns:e,attr"`
 	Properties   []DevicePropertiesProperty `xml:"property"`
 }
 type DevicePropertiesProperty struct {
-	XMLName                  xml.Name                                  `xml:"property"`
-	SettingsReplicationState *DevicePropertiesSettingsReplicationState `xml:"SettingsReplicationState"`
-	ZoneName                 *DevicePropertiesZoneName                 `xml:"ZoneName"`
-	Icon                     *DevicePropertiesIcon                     `xml:"Icon"`
-	Configuration            *DevicePropertiesConfiguration            `xml:"Configuration"`
-	Invisible                *DevicePropertiesInvisible                `xml:"Invisible"`
-	IsZoneBridge             *DevicePropertiesIsZoneBridge             `xml:"IsZoneBridge"`
-	AirPlayEnabled           *DevicePropertiesAirPlayEnabled           `xml:"AirPlayEnabled"`
-	SupportsAudioIn          *DevicePropertiesSupportsAudioIn          `xml:"SupportsAudioIn"`
-	SupportsAudioClip        *DevicePropertiesSupportsAudioClip        `xml:"SupportsAudioClip"`
-	IsIdle                   *DevicePropertiesIsIdle                   `xml:"IsIdle"`
-	MoreInfo                 *DevicePropertiesMoreInfo                 `xml:"MoreInfo"`
-	ChannelMapSet            *DevicePropertiesChannelMapSet            `xml:"ChannelMapSet"`
-	HTSatChanMapSet          *DevicePropertiesHTSatChanMapSet          `xml:"HTSatChanMapSet"`
-	HTFreq                   *DevicePropertiesHTFreq                   `xml:"HTFreq"`
-	HTBondedZoneCommitState  *DevicePropertiesHTBondedZoneCommitState  `xml:"HTBondedZoneCommitState"`
-	Orientation              *DevicePropertiesOrientation              `xml:"Orientation"`
-	LastChangedPlayState     *DevicePropertiesLastChangedPlayState     `xml:"LastChangedPlayState"`
-	RoomCalibrationState     *DevicePropertiesRoomCalibrationState     `xml:"RoomCalibrationState"`
-	AvailableRoomCalibration *DevicePropertiesAvailableRoomCalibration `xml:"AvailableRoomCalibration"`
-	TVConfigurationError     *DevicePropertiesTVConfigurationError     `xml:"TVConfigurationError"`
-	HdmiCecAvailable         *DevicePropertiesHdmiCecAvailable         `xml:"HdmiCecAvailable"`
-	WirelessMode             *DevicePropertiesWirelessMode             `xml:"WirelessMode"`
-	WirelessLeafOnly         *DevicePropertiesWirelessLeafOnly         `xml:"WirelessLeafOnly"`
-	HasConfiguredSSID        *DevicePropertiesHasConfiguredSSID        `xml:"HasConfiguredSSID"`
-	ChannelFreq              *DevicePropertiesChannelFreq              `xml:"ChannelFreq"`
-	BehindWifiExtender       *DevicePropertiesBehindWifiExtender       `xml:"BehindWifiExtender"`
-	WifiEnabled              *DevicePropertiesWifiEnabled              `xml:"WifiEnabled"`
-	ConfigMode               *DevicePropertiesConfigMode               `xml:"ConfigMode"`
-	SecureRegState           *DevicePropertiesSecureRegState           `xml:"SecureRegState"`
-	VoiceConfigState         *DevicePropertiesVoiceConfigState         `xml:"VoiceConfigState"`
-	MicEnabled               *DevicePropertiesMicEnabled               `xml:"MicEnabled"`
+	XMLName                  xml.Name `xml:"property"`
+	SettingsReplicationState *string  `xml:"SettingsReplicationState"`
+	ZoneName                 *string  `xml:"ZoneName"`
+	Icon                     *string  `xml:"Icon"`
+	Configuration            *string  `xml:"Configuration"`
+	Invisible                *bool    `xml:"Invisible"`
+	IsZoneBridge             *bool    `xml:"IsZoneBridge"`
+	AirPlayEnabled           *bool    `xml:"AirPlayEnabled"`
+	SupportsAudioIn          *bool    `xml:"SupportsAudioIn"`
+	SupportsAudioClip        *bool    `xml:"SupportsAudioClip"`
+	IsIdle                   *bool    `xml:"IsIdle"`
+	MoreInfo                 *string  `xml:"MoreInfo"`
+	ChannelMapSet            *string  `xml:"ChannelMapSet"`
+	HTSatChanMapSet          *string  `xml:"HTSatChanMapSet"`
+	HTFreq                   *uint32  `xml:"HTFreq"`
+	HTBondedZoneCommitState  *uint32  `xml:"HTBondedZoneCommitState"`
+	Orientation              *int32   `xml:"Orientation"`
+	LastChangedPlayState     *string  `xml:"LastChangedPlayState"`
+	RoomCalibrationState     *int32   `xml:"RoomCalibrationState"`
+	AvailableRoomCalibration *string  `xml:"AvailableRoomCalibration"`
+	TVConfigurationError     *bool    `xml:"TVConfigurationError"`
+	HdmiCecAvailable         *bool    `xml:"HdmiCecAvailable"`
+	WirelessMode             *uint32  `xml:"WirelessMode"`
+	WirelessLeafOnly         *bool    `xml:"WirelessLeafOnly"`
+	HasConfiguredSSID        *bool    `xml:"HasConfiguredSSID"`
+	ChannelFreq              *uint32  `xml:"ChannelFreq"`
+	BehindWifiExtender       *uint32  `xml:"BehindWifiExtender"`
+	WifiEnabled              *bool    `xml:"WifiEnabled"`
+	ConfigMode               *string  `xml:"ConfigMode"`
+	SecureRegState           *uint32  `xml:"SecureRegState"`
+	VoiceConfigState         *uint32  `xml:"VoiceConfigState"`
+	MicEnabled               *uint32  `xml:"MicEnabled"`
 }
 
 func DevicePropertiesDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -813,67 +781,67 @@ func DevicePropertiesDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SettingsReplicationState != nil:
-			zp.EventCallback(*prop.SettingsReplicationState)
+			dispatchDevicePropertiesSettingsReplicationState(*prop.SettingsReplicationState) // string
 		case prop.ZoneName != nil:
-			zp.EventCallback(*prop.ZoneName)
+			dispatchDevicePropertiesZoneName(*prop.ZoneName) // string
 		case prop.Icon != nil:
-			zp.EventCallback(*prop.Icon)
+			dispatchDevicePropertiesIcon(*prop.Icon) // string
 		case prop.Configuration != nil:
-			zp.EventCallback(*prop.Configuration)
+			dispatchDevicePropertiesConfiguration(*prop.Configuration) // string
 		case prop.Invisible != nil:
-			zp.EventCallback(*prop.Invisible)
+			dispatchDevicePropertiesInvisible(*prop.Invisible) // bool
 		case prop.IsZoneBridge != nil:
-			zp.EventCallback(*prop.IsZoneBridge)
+			dispatchDevicePropertiesIsZoneBridge(*prop.IsZoneBridge) // bool
 		case prop.AirPlayEnabled != nil:
-			zp.EventCallback(*prop.AirPlayEnabled)
+			dispatchDevicePropertiesAirPlayEnabled(*prop.AirPlayEnabled) // bool
 		case prop.SupportsAudioIn != nil:
-			zp.EventCallback(*prop.SupportsAudioIn)
+			dispatchDevicePropertiesSupportsAudioIn(*prop.SupportsAudioIn) // bool
 		case prop.SupportsAudioClip != nil:
-			zp.EventCallback(*prop.SupportsAudioClip)
+			dispatchDevicePropertiesSupportsAudioClip(*prop.SupportsAudioClip) // bool
 		case prop.IsIdle != nil:
-			zp.EventCallback(*prop.IsIdle)
+			dispatchDevicePropertiesIsIdle(*prop.IsIdle) // bool
 		case prop.MoreInfo != nil:
-			zp.EventCallback(*prop.MoreInfo)
+			dispatchDevicePropertiesMoreInfo(*prop.MoreInfo) // string
 		case prop.ChannelMapSet != nil:
-			zp.EventCallback(*prop.ChannelMapSet)
+			dispatchDevicePropertiesChannelMapSet(*prop.ChannelMapSet) // string
 		case prop.HTSatChanMapSet != nil:
-			zp.EventCallback(*prop.HTSatChanMapSet)
+			dispatchDevicePropertiesHTSatChanMapSet(*prop.HTSatChanMapSet) // string
 		case prop.HTFreq != nil:
-			zp.EventCallback(*prop.HTFreq)
+			dispatchDevicePropertiesHTFreq(*prop.HTFreq) // uint32
 		case prop.HTBondedZoneCommitState != nil:
-			zp.EventCallback(*prop.HTBondedZoneCommitState)
+			dispatchDevicePropertiesHTBondedZoneCommitState(*prop.HTBondedZoneCommitState) // uint32
 		case prop.Orientation != nil:
-			zp.EventCallback(*prop.Orientation)
+			dispatchDevicePropertiesOrientation(*prop.Orientation) // int32
 		case prop.LastChangedPlayState != nil:
-			zp.EventCallback(*prop.LastChangedPlayState)
+			dispatchDevicePropertiesLastChangedPlayState(*prop.LastChangedPlayState) // string
 		case prop.RoomCalibrationState != nil:
-			zp.EventCallback(*prop.RoomCalibrationState)
+			dispatchDevicePropertiesRoomCalibrationState(*prop.RoomCalibrationState) // int32
 		case prop.AvailableRoomCalibration != nil:
-			zp.EventCallback(*prop.AvailableRoomCalibration)
+			dispatchDevicePropertiesAvailableRoomCalibration(*prop.AvailableRoomCalibration) // string
 		case prop.TVConfigurationError != nil:
-			zp.EventCallback(*prop.TVConfigurationError)
+			dispatchDevicePropertiesTVConfigurationError(*prop.TVConfigurationError) // bool
 		case prop.HdmiCecAvailable != nil:
-			zp.EventCallback(*prop.HdmiCecAvailable)
+			dispatchDevicePropertiesHdmiCecAvailable(*prop.HdmiCecAvailable) // bool
 		case prop.WirelessMode != nil:
-			zp.EventCallback(*prop.WirelessMode)
+			dispatchDevicePropertiesWirelessMode(*prop.WirelessMode) // uint32
 		case prop.WirelessLeafOnly != nil:
-			zp.EventCallback(*prop.WirelessLeafOnly)
+			dispatchDevicePropertiesWirelessLeafOnly(*prop.WirelessLeafOnly) // bool
 		case prop.HasConfiguredSSID != nil:
-			zp.EventCallback(*prop.HasConfiguredSSID)
+			dispatchDevicePropertiesHasConfiguredSSID(*prop.HasConfiguredSSID) // bool
 		case prop.ChannelFreq != nil:
-			zp.EventCallback(*prop.ChannelFreq)
+			dispatchDevicePropertiesChannelFreq(*prop.ChannelFreq) // uint32
 		case prop.BehindWifiExtender != nil:
-			zp.EventCallback(*prop.BehindWifiExtender)
+			dispatchDevicePropertiesBehindWifiExtender(*prop.BehindWifiExtender) // uint32
 		case prop.WifiEnabled != nil:
-			zp.EventCallback(*prop.WifiEnabled)
+			dispatchDevicePropertiesWifiEnabled(*prop.WifiEnabled) // bool
 		case prop.ConfigMode != nil:
-			zp.EventCallback(*prop.ConfigMode)
+			dispatchDevicePropertiesConfigMode(*prop.ConfigMode) // string
 		case prop.SecureRegState != nil:
-			zp.EventCallback(*prop.SecureRegState)
+			dispatchDevicePropertiesSecureRegState(*prop.SecureRegState) // uint32
 		case prop.VoiceConfigState != nil:
-			zp.EventCallback(*prop.VoiceConfigState)
+			dispatchDevicePropertiesVoiceConfigState(*prop.VoiceConfigState) // uint32
 		case prop.MicEnabled != nil:
-			zp.EventCallback(*prop.MicEnabled)
+			dispatchDevicePropertiesMicEnabled(*prop.MicEnabled) // uint32
 		}
 	}
 }

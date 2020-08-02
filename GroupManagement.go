@@ -185,24 +185,18 @@ func (s *GroupManagementService) SetSourceAreaIds(httpClient *http.Client, args 
 	return r.Body.SetSourceAreaIds, nil
 }
 
-// Events
-type GroupManagementGroupCoordinatorIsLocal bool
-type GroupManagementLocalGroupUUID string
-type GroupManagementVirtualLineInGroupID string
-type GroupManagementResetVolumeAfter bool
-type GroupManagementVolumeAVTransportURI string
 type GroupManagementUpnpEvent struct {
 	XMLName      xml.Name                  `xml:"propertyset"`
 	XMLNameSpace string                    `xml:"xmlns:e,attr"`
 	Properties   []GroupManagementProperty `xml:"property"`
 }
 type GroupManagementProperty struct {
-	XMLName                 xml.Name                                `xml:"property"`
-	GroupCoordinatorIsLocal *GroupManagementGroupCoordinatorIsLocal `xml:"GroupCoordinatorIsLocal"`
-	LocalGroupUUID          *GroupManagementLocalGroupUUID          `xml:"LocalGroupUUID"`
-	VirtualLineInGroupID    *GroupManagementVirtualLineInGroupID    `xml:"VirtualLineInGroupID"`
-	ResetVolumeAfter        *GroupManagementResetVolumeAfter        `xml:"ResetVolumeAfter"`
-	VolumeAVTransportURI    *GroupManagementVolumeAVTransportURI    `xml:"VolumeAVTransportURI"`
+	XMLName                 xml.Name `xml:"property"`
+	GroupCoordinatorIsLocal *bool    `xml:"GroupCoordinatorIsLocal"`
+	LocalGroupUUID          *string  `xml:"LocalGroupUUID"`
+	VirtualLineInGroupID    *string  `xml:"VirtualLineInGroupID"`
+	ResetVolumeAfter        *bool    `xml:"ResetVolumeAfter"`
+	VolumeAVTransportURI    *string  `xml:"VolumeAVTransportURI"`
 }
 
 func GroupManagementDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -214,15 +208,15 @@ func GroupManagementDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.GroupCoordinatorIsLocal != nil:
-			zp.EventCallback(*prop.GroupCoordinatorIsLocal)
+			dispatchGroupManagementGroupCoordinatorIsLocal(*prop.GroupCoordinatorIsLocal) // bool
 		case prop.LocalGroupUUID != nil:
-			zp.EventCallback(*prop.LocalGroupUUID)
+			dispatchGroupManagementLocalGroupUUID(*prop.LocalGroupUUID) // string
 		case prop.VirtualLineInGroupID != nil:
-			zp.EventCallback(*prop.VirtualLineInGroupID)
+			dispatchGroupManagementVirtualLineInGroupID(*prop.VirtualLineInGroupID) // string
 		case prop.ResetVolumeAfter != nil:
-			zp.EventCallback(*prop.ResetVolumeAfter)
+			dispatchGroupManagementResetVolumeAfter(*prop.ResetVolumeAfter) // bool
 		case prop.VolumeAVTransportURI != nil:
-			zp.EventCallback(*prop.VolumeAVTransportURI)
+			dispatchGroupManagementVolumeAVTransportURI(*prop.VolumeAVTransportURI) // string
 		}
 	}
 }

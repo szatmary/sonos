@@ -1288,16 +1288,14 @@ func (s *AVTransportService) EndDirectControlSession(httpClient *http.Client, ar
 	return r.Body.EndDirectControlSession, nil
 }
 
-// Events
-type AVTransportLastChange string
 type AVTransportUpnpEvent struct {
 	XMLName      xml.Name              `xml:"propertyset"`
 	XMLNameSpace string                `xml:"xmlns:e,attr"`
 	Properties   []AVTransportProperty `xml:"property"`
 }
 type AVTransportProperty struct {
-	XMLName    xml.Name               `xml:"property"`
-	LastChange *AVTransportLastChange `xml:"LastChange"`
+	XMLName    xml.Name `xml:"property"`
+	LastChange *string  `xml:"LastChange"`
 }
 
 func AVTransportDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -1309,7 +1307,7 @@ func AVTransportDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			zp.EventCallback(*prop.LastChange)
+			dispatchAVTransportLastChange(*prop.LastChange) // string
 		}
 	}
 }

@@ -877,16 +877,14 @@ func (s *RenderingControlService) SetRoomCalibrationStatus(httpClient *http.Clie
 	return r.Body.SetRoomCalibrationStatus, nil
 }
 
-// Events
-type RenderingControlLastChange string
 type RenderingControlUpnpEvent struct {
 	XMLName      xml.Name                   `xml:"propertyset"`
 	XMLNameSpace string                     `xml:"xmlns:e,attr"`
 	Properties   []RenderingControlProperty `xml:"property"`
 }
 type RenderingControlProperty struct {
-	XMLName    xml.Name                    `xml:"property"`
-	LastChange *RenderingControlLastChange `xml:"LastChange"`
+	XMLName    xml.Name `xml:"property"`
+	LastChange *string  `xml:"LastChange"`
 }
 
 func RenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -898,7 +896,7 @@ func RenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			zp.EventCallback(*prop.LastChange)
+			dispatchRenderingControlLastChange(*prop.LastChange) // string
 		}
 	}
 }

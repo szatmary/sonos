@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 type SonosService interface {
@@ -179,9 +178,10 @@ func (s *Sonos) Subscribe(zp *ZonePlayer, service SonosService) error {
 	conn, err := net.Dial("tcp", service.EventEndpoint().Host)
 	host := fmt.Sprintf("%s:%d", conn.LocalAddr().(*net.TCPAddr).IP.String(), s.httpListener.Addr().(*net.TCPAddr).Port)
 	calbackUrl := url.URL{
-		Scheme: "http",
-		Host:   host,
-		Path:   service.EventEndpoint().Path,
+		Scheme:   "http",
+		Host:     host,
+		RawQuery: "sn=" + zp.SerialNum(),
+		Path:     service.EventEndpoint().Path,
 	}
 	var req string
 	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", service.EventEndpoint().String())
@@ -193,7 +193,7 @@ func (s *Sonos) Subscribe(zp *ZonePlayer, service SonosService) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%v\n", req)
+	// fmt.Printf("%v\n", req)
 	fmt.Fprintf(conn, req+"\r\n")
 	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
 	if err != nil {
@@ -201,7 +201,7 @@ func (s *Sonos) Subscribe(zp *ZonePlayer, service SonosService) error {
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
-	fmt.Printf("%v\n", body)
+	// fmt.Printf("%v\n", body)
 	if 200 != res.StatusCode {
 		fmt.Printf("%v\n", res)
 		return errors.New(string(body))
@@ -292,267 +292,54 @@ func (z *ZonePlayer) SetAVTransportURI(url string) error {
 	return err
 }
 
-func (zp *ZonePlayer) EventCallback(evt interface{}) {
-	switch e := evt.(type) {
-	default:
-		fmt.Sprintf("Unhandeld type %T", evt)
-	case ZoneGroupTopologyZoneGroupState:
-		var zoneGroupState ZoneGroupState
-		err := xml.Unmarshal([]byte(e), &zoneGroupState)
-		if err == nil && zp.ZoneGroupStateCallback != nil {
-			zp.ZoneGroupStateCallback(&zoneGroupState)
-		}
-	case DevicePropertiesSettingsReplicationState:
-	}
-}
+// func (zp *ZonePlayer) EventCallback(evt interface{}) {
+// 	switch e := evt.(type) {
+// 	default:
+// 		fmt.Printf("Unhandeld event %T\n", evt)
+// 	case ZoneGroupTopologyZoneGroupState:
+// 		var zoneGroupState ZoneGroupState
+// 		err := xml.Unmarshal([]byte(e), &zoneGroupState)
+// 		if err == nil && zp.ZoneGroupStateCallback != nil {
+// 			zp.ZoneGroupStateCallback(&zoneGroupState)
+// 		}
+// 		// type AlarmClockTimeZone string
+// 		// type AlarmClockTimeServer string
+// 		// type AlarmClockTimeGeneration uint32
+// 		// type AlarmClockAlarmListVersion string
+// 		// type AlarmClockDailyIndexRefreshTime string
+// 		// type AlarmClockTimeFormat string
+// 		// type AlarmClockDateFormat string
 
-// Event handlers
-func (z *ZonePlayer) AVTransportLastChangeEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "AVTransportLastChangeEvent: %v\n", evt)
-}
-func (z *ZonePlayer) AlarmClockTimeZoneEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "AlarmClockTimeZoneEvent: %v\n", evt)
-}
-func (z *ZonePlayer) AlarmClockTimeServerEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "AlarmClockTimeServerEvent: %v\n", evt)
-}
-func (z *ZonePlayer) AlarmClockTimeGenerationEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "AlarmClockTimeGenerationEvent: %v\n", evt)
-}
-func (z *ZonePlayer) AlarmClockAlarmListVersionEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "AlarmClockAlarmListVersionEvent: %v\n", evt)
-}
-func (z *ZonePlayer) AlarmClockDailyIndexRefreshTimeEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "AlarmClockDailyIndexRefreshTimeEvent: %v\n", evt)
-}
-func (z *ZonePlayer) AlarmClockTimeFormatEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) AlarmClockDateFormatEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ConnectionManagerSourceProtocolInfoEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ConnectionManagerSinkProtocolInfoEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ConnectionManagerCurrentConnectionIDsEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectorySystemUpdateIDEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryContainerUpdateIDsEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryShareIndexInProgressEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryShareIndexLastErrorEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryUserRadioUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectorySavedQueuesUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryShareListUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryRecentlyPlayedUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryBrowseableEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryRadioFavoritesUpdateIDEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryRadioLocationUpdateIDEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryFavoritesUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ContentDirectoryFavoritePresetsUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesSettingsReplicationStateEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesZoneNameEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesIconEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesConfigurationEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesInvisibleEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesIsZoneBridgeEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesAirPlayEnabledEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesSupportsAudioInEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesSupportsAudioClipEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesIsIdleEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesMoreInfoEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesChannelMapSetEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesHTSatChanMapSetEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesHTFreqEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesHTBondedZoneCommitStateEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesOrientationEvent(evt int32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesLastChangedPlayStateEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesRoomCalibrationStateEvent(evt int32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesAvailableRoomCalibrationEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesTVConfigurationErrorEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesHdmiCecAvailableEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesWirelessModeEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesWirelessLeafOnlyEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesHasConfiguredSSIDEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesChannelFreqEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesBehindWifiExtenderEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesWifiEnabledEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesConfigModeEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesSecureRegStateEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesVoiceConfigStateEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) DevicePropertiesMicEnabledEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupRenderingControlGroupMuteEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupRenderingControlGroupVolumeEvent(evt uint16) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupRenderingControlGroupVolumeChangeableEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupManagementGroupCoordinatorIsLocalEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupManagementLocalGroupUUIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupManagementVirtualLineInGroupIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupManagementResetVolumeAfterEvent(evt bool) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) GroupManagementVolumeAVTransportURIEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) MusicServicesServiceListVersionEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) QueueLastChangeEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) RenderingControlLastChangeEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) SystemPropertiesCustomerIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) SystemPropertiesUpdateIDEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) SystemPropertiesUpdateIDXEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) SystemPropertiesVoiceUpdateIDEvent(evt uint32) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) SystemPropertiesThirdPartyHashEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) VirtualLineInLastChangeEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyAvailableSoftwareUpdateEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyZoneGroupStateEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyThirdPartyMediaServersXEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyAlarmRunSequenceEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyMuseHouseholdIdEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyZoneGroupNameEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyZoneGroupIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyZonePlayerUUIDsInGroupEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyAreasUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologySourceAreasUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
-func (z *ZonePlayer) ZoneGroupTopologyNetsettingsUpdateIDEvent(evt string) {
-	fmt.Fprintf(os.Stderr, "%v\n", evt)
-}
+// 		// type AVTransportLastChange string
+
+// 		// type ConnectionManagerSourceProtocolInfo string
+// 		// type ConnectionManagerSinkProtocolInfo string
+// 		// type ConnectionManagerCurrentConnectionIDs string
+
+// 		// type ContentDirectorySystemUpdateID uint32
+// 		// type ContentDirectoryContainerUpdateIDs string
+// 		// type ContentDirectoryShareIndexInProgress bool
+// 		// type ContentDirectoryShareIndexLastError string
+// 		// type ContentDirectoryUserRadioUpdateID string
+// 		// type ContentDirectorySavedQueuesUpdateID string
+// 		// type ContentDirectoryShareListUpdateID string
+// 		// type ContentDirectoryRecentlyPlayedUpdateID string
+// 		// type ContentDirectoryBrowseable bool
+// 		// type ContentDirectoryRadioFavoritesUpdateID uint32
+// 		// type ContentDirectoryRadioLocationUpdateID uint32
+// 		// type ContentDirectoryFavoritesUpdateID string
+// 		// type ContentDirectoryFavoritePresetsUpdateID string
+
+// 		// type ZoneGroupTopologyAvailableSoftwareUpdate string
+// 		// type ZoneGroupTopologyZoneGroupState string
+// 		// type ZoneGroupTopologyThirdPartyMediaServersX string
+// 		// type ZoneGroupTopologyAlarmRunSequence string
+// 		// type ZoneGroupTopologyMuseHouseholdId string
+// 		// type ZoneGroupTopologyZoneGroupName string
+// 		// type ZoneGroupTopologyZoneGroupID string
+// 		// type ZoneGroupTopologyZonePlayerUUIDsInGroup string
+// 		// type ZoneGroupTopologyAreasUpdateID string
+// 		// type ZoneGroupTopologySourceAreasUpdateID string
+// 		// type ZoneGroupTopologyNetsettingsUpdateID string
+// 	}
+// }

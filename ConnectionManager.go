@@ -161,20 +161,16 @@ func (s *ConnectionManagerService) GetCurrentConnectionInfo(httpClient *http.Cli
 	return r.Body.GetCurrentConnectionInfo, nil
 }
 
-// Events
-type ConnectionManagerSourceProtocolInfo string
-type ConnectionManagerSinkProtocolInfo string
-type ConnectionManagerCurrentConnectionIDs string
 type ConnectionManagerUpnpEvent struct {
 	XMLName      xml.Name                    `xml:"propertyset"`
 	XMLNameSpace string                      `xml:"xmlns:e,attr"`
 	Properties   []ConnectionManagerProperty `xml:"property"`
 }
 type ConnectionManagerProperty struct {
-	XMLName              xml.Name                               `xml:"property"`
-	SourceProtocolInfo   *ConnectionManagerSourceProtocolInfo   `xml:"SourceProtocolInfo"`
-	SinkProtocolInfo     *ConnectionManagerSinkProtocolInfo     `xml:"SinkProtocolInfo"`
-	CurrentConnectionIDs *ConnectionManagerCurrentConnectionIDs `xml:"CurrentConnectionIDs"`
+	XMLName              xml.Name `xml:"property"`
+	SourceProtocolInfo   *string  `xml:"SourceProtocolInfo"`
+	SinkProtocolInfo     *string  `xml:"SinkProtocolInfo"`
+	CurrentConnectionIDs *string  `xml:"CurrentConnectionIDs"`
 }
 
 func ConnectionManagerDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -186,11 +182,11 @@ func ConnectionManagerDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SourceProtocolInfo != nil:
-			zp.EventCallback(*prop.SourceProtocolInfo)
+			dispatchConnectionManagerSourceProtocolInfo(*prop.SourceProtocolInfo) // string
 		case prop.SinkProtocolInfo != nil:
-			zp.EventCallback(*prop.SinkProtocolInfo)
+			dispatchConnectionManagerSinkProtocolInfo(*prop.SinkProtocolInfo) // string
 		case prop.CurrentConnectionIDs != nil:
-			zp.EventCallback(*prop.CurrentConnectionIDs)
+			dispatchConnectionManagerCurrentConnectionIDs(*prop.CurrentConnectionIDs) // string
 		}
 	}
 }

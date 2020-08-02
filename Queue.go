@@ -406,16 +406,14 @@ func (s *QueueService) SaveAsSonosPlaylist(httpClient *http.Client, args *QueueS
 	return r.Body.SaveAsSonosPlaylist, nil
 }
 
-// Events
-type QueueLastChange string
 type QueueUpnpEvent struct {
 	XMLName      xml.Name        `xml:"propertyset"`
 	XMLNameSpace string          `xml:"xmlns:e,attr"`
 	Properties   []QueueProperty `xml:"property"`
 }
 type QueueProperty struct {
-	XMLName    xml.Name         `xml:"property"`
-	LastChange *QueueLastChange `xml:"LastChange"`
+	XMLName    xml.Name `xml:"property"`
+	LastChange *string  `xml:"LastChange"`
 }
 
 func QueueDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -427,7 +425,7 @@ func QueueDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			zp.EventCallback(*prop.LastChange)
+			dispatchQueueLastChange(*prop.LastChange) // string
 		}
 	}
 }

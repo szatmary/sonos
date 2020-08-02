@@ -500,40 +500,26 @@ func (s *ContentDirectoryService) SetBrowseable(httpClient *http.Client, args *C
 	return r.Body.SetBrowseable, nil
 }
 
-// Events
-type ContentDirectorySystemUpdateID uint32
-type ContentDirectoryContainerUpdateIDs string
-type ContentDirectoryShareIndexInProgress bool
-type ContentDirectoryShareIndexLastError string
-type ContentDirectoryUserRadioUpdateID string
-type ContentDirectorySavedQueuesUpdateID string
-type ContentDirectoryShareListUpdateID string
-type ContentDirectoryRecentlyPlayedUpdateID string
-type ContentDirectoryBrowseable bool
-type ContentDirectoryRadioFavoritesUpdateID uint32
-type ContentDirectoryRadioLocationUpdateID uint32
-type ContentDirectoryFavoritesUpdateID string
-type ContentDirectoryFavoritePresetsUpdateID string
 type ContentDirectoryUpnpEvent struct {
 	XMLName      xml.Name                   `xml:"propertyset"`
 	XMLNameSpace string                     `xml:"xmlns:e,attr"`
 	Properties   []ContentDirectoryProperty `xml:"property"`
 }
 type ContentDirectoryProperty struct {
-	XMLName                 xml.Name                                 `xml:"property"`
-	SystemUpdateID          *ContentDirectorySystemUpdateID          `xml:"SystemUpdateID"`
-	ContainerUpdateIDs      *ContentDirectoryContainerUpdateIDs      `xml:"ContainerUpdateIDs"`
-	ShareIndexInProgress    *ContentDirectoryShareIndexInProgress    `xml:"ShareIndexInProgress"`
-	ShareIndexLastError     *ContentDirectoryShareIndexLastError     `xml:"ShareIndexLastError"`
-	UserRadioUpdateID       *ContentDirectoryUserRadioUpdateID       `xml:"UserRadioUpdateID"`
-	SavedQueuesUpdateID     *ContentDirectorySavedQueuesUpdateID     `xml:"SavedQueuesUpdateID"`
-	ShareListUpdateID       *ContentDirectoryShareListUpdateID       `xml:"ShareListUpdateID"`
-	RecentlyPlayedUpdateID  *ContentDirectoryRecentlyPlayedUpdateID  `xml:"RecentlyPlayedUpdateID"`
-	Browseable              *ContentDirectoryBrowseable              `xml:"Browseable"`
-	RadioFavoritesUpdateID  *ContentDirectoryRadioFavoritesUpdateID  `xml:"RadioFavoritesUpdateID"`
-	RadioLocationUpdateID   *ContentDirectoryRadioLocationUpdateID   `xml:"RadioLocationUpdateID"`
-	FavoritesUpdateID       *ContentDirectoryFavoritesUpdateID       `xml:"FavoritesUpdateID"`
-	FavoritePresetsUpdateID *ContentDirectoryFavoritePresetsUpdateID `xml:"FavoritePresetsUpdateID"`
+	XMLName                 xml.Name `xml:"property"`
+	SystemUpdateID          *uint32  `xml:"SystemUpdateID"`
+	ContainerUpdateIDs      *string  `xml:"ContainerUpdateIDs"`
+	ShareIndexInProgress    *bool    `xml:"ShareIndexInProgress"`
+	ShareIndexLastError     *string  `xml:"ShareIndexLastError"`
+	UserRadioUpdateID       *string  `xml:"UserRadioUpdateID"`
+	SavedQueuesUpdateID     *string  `xml:"SavedQueuesUpdateID"`
+	ShareListUpdateID       *string  `xml:"ShareListUpdateID"`
+	RecentlyPlayedUpdateID  *string  `xml:"RecentlyPlayedUpdateID"`
+	Browseable              *bool    `xml:"Browseable"`
+	RadioFavoritesUpdateID  *uint32  `xml:"RadioFavoritesUpdateID"`
+	RadioLocationUpdateID   *uint32  `xml:"RadioLocationUpdateID"`
+	FavoritesUpdateID       *string  `xml:"FavoritesUpdateID"`
+	FavoritePresetsUpdateID *string  `xml:"FavoritePresetsUpdateID"`
 }
 
 func ContentDirectoryDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -545,31 +531,31 @@ func ContentDirectoryDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SystemUpdateID != nil:
-			zp.EventCallback(*prop.SystemUpdateID)
+			dispatchContentDirectorySystemUpdateID(*prop.SystemUpdateID) // uint32
 		case prop.ContainerUpdateIDs != nil:
-			zp.EventCallback(*prop.ContainerUpdateIDs)
+			dispatchContentDirectoryContainerUpdateIDs(*prop.ContainerUpdateIDs) // string
 		case prop.ShareIndexInProgress != nil:
-			zp.EventCallback(*prop.ShareIndexInProgress)
+			dispatchContentDirectoryShareIndexInProgress(*prop.ShareIndexInProgress) // bool
 		case prop.ShareIndexLastError != nil:
-			zp.EventCallback(*prop.ShareIndexLastError)
+			dispatchContentDirectoryShareIndexLastError(*prop.ShareIndexLastError) // string
 		case prop.UserRadioUpdateID != nil:
-			zp.EventCallback(*prop.UserRadioUpdateID)
+			dispatchContentDirectoryUserRadioUpdateID(*prop.UserRadioUpdateID) // string
 		case prop.SavedQueuesUpdateID != nil:
-			zp.EventCallback(*prop.SavedQueuesUpdateID)
+			dispatchContentDirectorySavedQueuesUpdateID(*prop.SavedQueuesUpdateID) // string
 		case prop.ShareListUpdateID != nil:
-			zp.EventCallback(*prop.ShareListUpdateID)
+			dispatchContentDirectoryShareListUpdateID(*prop.ShareListUpdateID) // string
 		case prop.RecentlyPlayedUpdateID != nil:
-			zp.EventCallback(*prop.RecentlyPlayedUpdateID)
+			dispatchContentDirectoryRecentlyPlayedUpdateID(*prop.RecentlyPlayedUpdateID) // string
 		case prop.Browseable != nil:
-			zp.EventCallback(*prop.Browseable)
+			dispatchContentDirectoryBrowseable(*prop.Browseable) // bool
 		case prop.RadioFavoritesUpdateID != nil:
-			zp.EventCallback(*prop.RadioFavoritesUpdateID)
+			dispatchContentDirectoryRadioFavoritesUpdateID(*prop.RadioFavoritesUpdateID) // uint32
 		case prop.RadioLocationUpdateID != nil:
-			zp.EventCallback(*prop.RadioLocationUpdateID)
+			dispatchContentDirectoryRadioLocationUpdateID(*prop.RadioLocationUpdateID) // uint32
 		case prop.FavoritesUpdateID != nil:
-			zp.EventCallback(*prop.FavoritesUpdateID)
+			dispatchContentDirectoryFavoritesUpdateID(*prop.FavoritesUpdateID) // string
 		case prop.FavoritePresetsUpdateID != nil:
-			zp.EventCallback(*prop.FavoritePresetsUpdateID)
+			dispatchContentDirectoryFavoritePresetsUpdateID(*prop.FavoritePresetsUpdateID) // string
 		}
 	}
 }

@@ -552,28 +552,20 @@ func (s *AlarmClockService) GetDailyIndexRefreshTime(httpClient *http.Client, ar
 	return r.Body.GetDailyIndexRefreshTime, nil
 }
 
-// Events
-type AlarmClockTimeZone string
-type AlarmClockTimeServer string
-type AlarmClockTimeGeneration uint32
-type AlarmClockAlarmListVersion string
-type AlarmClockDailyIndexRefreshTime string
-type AlarmClockTimeFormat string
-type AlarmClockDateFormat string
 type AlarmClockUpnpEvent struct {
 	XMLName      xml.Name             `xml:"propertyset"`
 	XMLNameSpace string               `xml:"xmlns:e,attr"`
 	Properties   []AlarmClockProperty `xml:"property"`
 }
 type AlarmClockProperty struct {
-	XMLName               xml.Name                         `xml:"property"`
-	TimeZone              *AlarmClockTimeZone              `xml:"TimeZone"`
-	TimeServer            *AlarmClockTimeServer            `xml:"TimeServer"`
-	TimeGeneration        *AlarmClockTimeGeneration        `xml:"TimeGeneration"`
-	AlarmListVersion      *AlarmClockAlarmListVersion      `xml:"AlarmListVersion"`
-	DailyIndexRefreshTime *AlarmClockDailyIndexRefreshTime `xml:"DailyIndexRefreshTime"`
-	TimeFormat            *AlarmClockTimeFormat            `xml:"TimeFormat"`
-	DateFormat            *AlarmClockDateFormat            `xml:"DateFormat"`
+	XMLName               xml.Name `xml:"property"`
+	TimeZone              *string  `xml:"TimeZone"`
+	TimeServer            *string  `xml:"TimeServer"`
+	TimeGeneration        *uint32  `xml:"TimeGeneration"`
+	AlarmListVersion      *string  `xml:"AlarmListVersion"`
+	DailyIndexRefreshTime *string  `xml:"DailyIndexRefreshTime"`
+	TimeFormat            *string  `xml:"TimeFormat"`
+	DateFormat            *string  `xml:"DateFormat"`
 }
 
 func AlarmClockDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -585,19 +577,19 @@ func AlarmClockDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.TimeZone != nil:
-			zp.EventCallback(*prop.TimeZone)
+			dispatchAlarmClockTimeZone(*prop.TimeZone) // string
 		case prop.TimeServer != nil:
-			zp.EventCallback(*prop.TimeServer)
+			dispatchAlarmClockTimeServer(*prop.TimeServer) // string
 		case prop.TimeGeneration != nil:
-			zp.EventCallback(*prop.TimeGeneration)
+			dispatchAlarmClockTimeGeneration(*prop.TimeGeneration) // uint32
 		case prop.AlarmListVersion != nil:
-			zp.EventCallback(*prop.AlarmListVersion)
+			dispatchAlarmClockAlarmListVersion(*prop.AlarmListVersion) // string
 		case prop.DailyIndexRefreshTime != nil:
-			zp.EventCallback(*prop.DailyIndexRefreshTime)
+			dispatchAlarmClockDailyIndexRefreshTime(*prop.DailyIndexRefreshTime) // string
 		case prop.TimeFormat != nil:
-			zp.EventCallback(*prop.TimeFormat)
+			dispatchAlarmClockTimeFormat(*prop.TimeFormat) // string
 		case prop.DateFormat != nil:
-			zp.EventCallback(*prop.DateFormat)
+			dispatchAlarmClockDateFormat(*prop.DateFormat) // string
 		}
 	}
 }

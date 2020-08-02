@@ -282,40 +282,12 @@ func (s *%sService) EventEndpoint() *url.URL {
 		return buf.Bytes()
 	}
 
-	// 	fmt.Fprintf(buf, `func (s *%sService) %sSubscribe(callback url.URL) error {`, ServiceName, ServiceName)
-	// 	fmt.Fprint(buf, `
-	// 	var req string
-	// 	req += fmt.Sprintf("SUBSCRIBE %s HTTP/1.0\r\n", s.eventEndpoint.String())
-	// 	req += fmt.Sprintf("HOST: %s\r\n", s.eventEndpoint.Host)
-	// 	req += fmt.Sprintf("USER-AGENT: Unknown UPnP/1.0 sonos.szatmary.github.com/1.0\r\n")
-	// 	req += fmt.Sprintf("CALLBACK: <%s>\r\n", callback.String())
-	// 	req += fmt.Sprintf("NT: upnp:event\r\n")
-	// 	req += fmt.Sprintf("TIMEOUT: Second-300\r\n")
-	// 	conn, err := net.Dial("tcp", s.eventEndpoint.Host)
-	// 	if err != nil {
-	// 		return err
+	// for _, sv := range s.StateVariables {
+	// 	if sv.SendEvents != "yes" {
+	// 		continue
 	// 	}
-	// 	fmt.Fprintf(conn, req+"\r\n")
-	// 	res, err := http.ReadResponse(bufio.NewReader(conn), nil)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer res.Body.Close()
-	// 	body, err := ioutil.ReadAll(res.Body)
-	// 	if 200 != res.StatusCode {
-	// 		fmt.Printf("%v\n", res)
-	// 		return errors.New(string(body))
-	// 	}
-	// 	return nil
-	// }`)
-
-	fmt.Fprint(buf, "\n// Events\n")
-	for _, sv := range s.StateVariables {
-		if sv.SendEvents != "yes" {
-			continue
-		}
-		fmt.Fprintf(buf, "type %s%s %s\n", ServiceName, sv.Name, sv.GoDataType())
-	}
+	// 	fmt.Fprintf(buf, "type %s%s %s\n", ServiceName, sv.Name, sv.GoDataType())
+	// }
 
 	fmt.Fprintf(buf, "type %sUpnpEvent struct {\nXMLName xml.Name `xml:\"propertyset\"`\nXMLNameSpace string `xml:\"xmlns:e,attr\"`\nProperties []%sProperty `xml:\"property\"`\n}\n", ServiceName, ServiceName)
 	fmt.Fprintf(buf, "type %sProperty struct {\nXMLName xml.Name `xml:\"property\"`\n", ServiceName)
@@ -323,7 +295,8 @@ func (s *%sService) EventEndpoint() *url.URL {
 		if sv.SendEvents != "yes" {
 			continue
 		}
-		fmt.Fprintf(buf, "%s *%s%s `xml:\"%s\"`\n", sv.Name, ServiceName, sv.Name, sv.Name)
+		// fmt.Fprintf(buf, "%s *%s%s `xml:\"%s\"`\n", sv.Name, ServiceName, sv.Name, sv.Name)
+		fmt.Fprintf(buf, "%s *%s `xml:\"%s\"`\n", sv.Name, sv.GoDataType(), sv.Name)
 	}
 
 	fmt.Fprint(buf, "}\n")
@@ -340,7 +313,8 @@ func (s *%sService) EventEndpoint() *url.URL {
 		if sv.SendEvents != "yes" {
 			continue
 		}
-		fmt.Fprintf(buf, "case prop.%s != nil:\n zp.EventCallback(*prop.%s)\n", sv.Name, sv.Name)
+		// fmt.Fprintf(buf, "case prop.%s != nil:\n zp.EventCallback(*prop.%s)\n", sv.Name, sv.Name)
+		fmt.Fprintf(buf, "case prop.%s != nil:\ndispatch%s%s(*prop.%s) // %s\n", sv.Name, ServiceName, sv.Name, sv.Name, sv.GoDataType())
 	}
 	fmt.Fprintf(buf, "}\n}\n}")
 	return buf.Bytes()

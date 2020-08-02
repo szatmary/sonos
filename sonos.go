@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -82,21 +83,69 @@ func NewSonos(args Args) (*Sonos, error) {
 }
 
 func (s *Sonos) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	// fmt.Printf("%v\n", request)
-	// if player, ok := s.zonePlayers.Load(request.URL.Fragment); ok {
-	// 	player
-	// }
-
-	fmt.Printf("P: %s\nF: %s\n", request.URL.Path, request.URL.Fragment)
-
 	defer request.Body.Close()
-	// requestBody, err := ioutil.ReadAll(request.Body)
-	// if err != nil {
-	// 	response.WriteHeader(500)
-	// 	return
-	// }
+	query := request.URL.Query()
+	sn, ok := query["sn"]
+	if !ok {
+		fmt.Printf("zonePlayer not found")
+		response.WriteHeader(404)
+		return
+	}
 
-	// fmt.Printf("body: %v\n", string(requestBody))
+	p, ok := s.zonePlayers.Load(sn[0])
+	if !ok {
+		fmt.Printf("zonePlayer not found")
+		response.WriteHeader(404)
+		return
+	}
+	zonePlayer := p.(*ZonePlayer)
+	data, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		response.WriteHeader(500)
+		return
+	}
+
+	if request.URL.Path == zonePlayer.AlarmClock.EventEndpoint().Path {
+		AlarmClockDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.AVTransport.EventEndpoint().Path {
+		AVTransportDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.ConnectionManager.EventEndpoint().Path {
+		ConnectionManagerDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.ContentDirectory.EventEndpoint().Path {
+		ContentDirectoryDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.DeviceProperties.EventEndpoint().Path {
+		DevicePropertiesDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.GroupManagement.EventEndpoint().Path {
+		GroupManagementDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.GroupRenderingControl.EventEndpoint().Path {
+		GroupRenderingControlDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.MusicServices.EventEndpoint().Path {
+		MusicServicesDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.Queue.EventEndpoint().Path {
+		QueueDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.RenderingControl.EventEndpoint().Path {
+		RenderingControlDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.SystemProperties.EventEndpoint().Path {
+		SystemPropertiesDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.VirtualLineIn.EventEndpoint().Path {
+		VirtualLineInDispatchEvent(zonePlayer, data)
+	}
+	if request.URL.Path == zonePlayer.ZoneGroupTopology.EventEndpoint().Path {
+		fmt.Printf("Dispatching %s (%s)\n", request.URL.Path, zonePlayer.ZoneGroupTopology.EventEndpoint().Path)
+		ZoneGroupTopologyDispatchEvent(zonePlayer, data)
+	}
+
 	response.WriteHeader(200)
 }
 

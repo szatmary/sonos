@@ -535,24 +535,18 @@ func (s *SystemPropertiesService) ReplaceAccountX(httpClient *http.Client, args 
 	return r.Body.ReplaceAccountX, nil
 }
 
-// Events
-type SystemPropertiesCustomerID string
-type SystemPropertiesUpdateID uint32
-type SystemPropertiesUpdateIDX uint32
-type SystemPropertiesVoiceUpdateID uint32
-type SystemPropertiesThirdPartyHash string
 type SystemPropertiesUpnpEvent struct {
 	XMLName      xml.Name                   `xml:"propertyset"`
 	XMLNameSpace string                     `xml:"xmlns:e,attr"`
 	Properties   []SystemPropertiesProperty `xml:"property"`
 }
 type SystemPropertiesProperty struct {
-	XMLName        xml.Name                        `xml:"property"`
-	CustomerID     *SystemPropertiesCustomerID     `xml:"CustomerID"`
-	UpdateID       *SystemPropertiesUpdateID       `xml:"UpdateID"`
-	UpdateIDX      *SystemPropertiesUpdateIDX      `xml:"UpdateIDX"`
-	VoiceUpdateID  *SystemPropertiesVoiceUpdateID  `xml:"VoiceUpdateID"`
-	ThirdPartyHash *SystemPropertiesThirdPartyHash `xml:"ThirdPartyHash"`
+	XMLName        xml.Name `xml:"property"`
+	CustomerID     *string  `xml:"CustomerID"`
+	UpdateID       *uint32  `xml:"UpdateID"`
+	UpdateIDX      *uint32  `xml:"UpdateIDX"`
+	VoiceUpdateID  *uint32  `xml:"VoiceUpdateID"`
+	ThirdPartyHash *string  `xml:"ThirdPartyHash"`
 }
 
 func SystemPropertiesDispatchEvent(zp *ZonePlayer, body []byte) {
@@ -564,15 +558,15 @@ func SystemPropertiesDispatchEvent(zp *ZonePlayer, body []byte) {
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.CustomerID != nil:
-			zp.EventCallback(*prop.CustomerID)
+			dispatchSystemPropertiesCustomerID(*prop.CustomerID) // string
 		case prop.UpdateID != nil:
-			zp.EventCallback(*prop.UpdateID)
+			dispatchSystemPropertiesUpdateID(*prop.UpdateID) // uint32
 		case prop.UpdateIDX != nil:
-			zp.EventCallback(*prop.UpdateIDX)
+			dispatchSystemPropertiesUpdateIDX(*prop.UpdateIDX) // uint32
 		case prop.VoiceUpdateID != nil:
-			zp.EventCallback(*prop.VoiceUpdateID)
+			dispatchSystemPropertiesVoiceUpdateID(*prop.VoiceUpdateID) // uint32
 		case prop.ThirdPartyHash != nil:
-			zp.EventCallback(*prop.ThirdPartyHash)
+			dispatchSystemPropertiesThirdPartyHash(*prop.ThirdPartyHash) // string
 		}
 	}
 }
