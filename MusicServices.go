@@ -9,9 +9,14 @@ import (
 	"net/url"
 )
 
+// State Variables
+type MusicServices_ServiceListVersion string
+
 type MusicServicesService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	ServiceListVersion *MusicServices_ServiceListVersion
 }
 
 func NewMusicServicesService(deviceUrl *url.URL) *MusicServicesService {
@@ -162,20 +167,23 @@ type MusicServicesUpnpEvent struct {
 	Properties   []MusicServicesProperty `xml:"property"`
 }
 type MusicServicesProperty struct {
-	XMLName            xml.Name `xml:"property"`
-	ServiceListVersion *string  `xml:"ServiceListVersion"`
+	XMLName            xml.Name                          `xml:"property"`
+	ServiceListVersion *MusicServices_ServiceListVersion `xml:"ServiceListVersion"`
 }
 
-func MusicServicesDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *MusicServicesService) ParseEvent(body []byte) []interface{} {
 	var evt MusicServicesUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.ServiceListVersion != nil:
-			dispatchMusicServicesServiceListVersion(zp, *prop.ServiceListVersion) // string
+			zp.ServiceListVersion = prop.ServiceListVersion
+			events = append(events, *prop.ServiceListVersion)
 		}
 	}
+	return events
 }

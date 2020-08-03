@@ -9,9 +9,13 @@ import (
 	"net/url"
 )
 
+// State Variables
+
 type QPlayService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+
 }
 
 func NewQPlayService(deviceUrl *url.URL) *QPlayService {
@@ -104,4 +108,7 @@ func (s *QPlayService) QPlayAuth(httpClient *http.Client, args *QPlayQPlayAuthAr
 		return nil, errors.New("unexpected respose from service")
 	}
 	return r.Body.QPlayAuth, nil
+}
+func (zp *QPlayService) ParseEvent([]byte) []interface{} {
+	return []interface{}{}
 }

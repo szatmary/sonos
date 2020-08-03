@@ -9,9 +9,38 @@ import (
 	"net/url"
 )
 
+// State Variables
+type ContentDirectory_SystemUpdateID uint32
+type ContentDirectory_ContainerUpdateIDs string
+type ContentDirectory_ShareIndexInProgress bool
+type ContentDirectory_ShareIndexLastError string
+type ContentDirectory_UserRadioUpdateID string
+type ContentDirectory_SavedQueuesUpdateID string
+type ContentDirectory_ShareListUpdateID string
+type ContentDirectory_RecentlyPlayedUpdateID string
+type ContentDirectory_Browseable bool
+type ContentDirectory_RadioFavoritesUpdateID uint32
+type ContentDirectory_RadioLocationUpdateID uint32
+type ContentDirectory_FavoritesUpdateID string
+type ContentDirectory_FavoritePresetsUpdateID string
+
 type ContentDirectoryService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	SystemUpdateID          *ContentDirectory_SystemUpdateID
+	ContainerUpdateIDs      *ContentDirectory_ContainerUpdateIDs
+	ShareIndexInProgress    *ContentDirectory_ShareIndexInProgress
+	ShareIndexLastError     *ContentDirectory_ShareIndexLastError
+	UserRadioUpdateID       *ContentDirectory_UserRadioUpdateID
+	SavedQueuesUpdateID     *ContentDirectory_SavedQueuesUpdateID
+	ShareListUpdateID       *ContentDirectory_ShareListUpdateID
+	RecentlyPlayedUpdateID  *ContentDirectory_RecentlyPlayedUpdateID
+	Browseable              *ContentDirectory_Browseable
+	RadioFavoritesUpdateID  *ContentDirectory_RadioFavoritesUpdateID
+	RadioLocationUpdateID   *ContentDirectory_RadioLocationUpdateID
+	FavoritesUpdateID       *ContentDirectory_FavoritesUpdateID
+	FavoritePresetsUpdateID *ContentDirectory_FavoritePresetsUpdateID
 }
 
 func NewContentDirectoryService(deviceUrl *url.URL) *ContentDirectoryService {
@@ -506,56 +535,71 @@ type ContentDirectoryUpnpEvent struct {
 	Properties   []ContentDirectoryProperty `xml:"property"`
 }
 type ContentDirectoryProperty struct {
-	XMLName                 xml.Name `xml:"property"`
-	SystemUpdateID          *uint32  `xml:"SystemUpdateID"`
-	ContainerUpdateIDs      *string  `xml:"ContainerUpdateIDs"`
-	ShareIndexInProgress    *bool    `xml:"ShareIndexInProgress"`
-	ShareIndexLastError     *string  `xml:"ShareIndexLastError"`
-	UserRadioUpdateID       *string  `xml:"UserRadioUpdateID"`
-	SavedQueuesUpdateID     *string  `xml:"SavedQueuesUpdateID"`
-	ShareListUpdateID       *string  `xml:"ShareListUpdateID"`
-	RecentlyPlayedUpdateID  *string  `xml:"RecentlyPlayedUpdateID"`
-	Browseable              *bool    `xml:"Browseable"`
-	RadioFavoritesUpdateID  *uint32  `xml:"RadioFavoritesUpdateID"`
-	RadioLocationUpdateID   *uint32  `xml:"RadioLocationUpdateID"`
-	FavoritesUpdateID       *string  `xml:"FavoritesUpdateID"`
-	FavoritePresetsUpdateID *string  `xml:"FavoritePresetsUpdateID"`
+	XMLName                 xml.Name                                  `xml:"property"`
+	SystemUpdateID          *ContentDirectory_SystemUpdateID          `xml:"SystemUpdateID"`
+	ContainerUpdateIDs      *ContentDirectory_ContainerUpdateIDs      `xml:"ContainerUpdateIDs"`
+	ShareIndexInProgress    *ContentDirectory_ShareIndexInProgress    `xml:"ShareIndexInProgress"`
+	ShareIndexLastError     *ContentDirectory_ShareIndexLastError     `xml:"ShareIndexLastError"`
+	UserRadioUpdateID       *ContentDirectory_UserRadioUpdateID       `xml:"UserRadioUpdateID"`
+	SavedQueuesUpdateID     *ContentDirectory_SavedQueuesUpdateID     `xml:"SavedQueuesUpdateID"`
+	ShareListUpdateID       *ContentDirectory_ShareListUpdateID       `xml:"ShareListUpdateID"`
+	RecentlyPlayedUpdateID  *ContentDirectory_RecentlyPlayedUpdateID  `xml:"RecentlyPlayedUpdateID"`
+	Browseable              *ContentDirectory_Browseable              `xml:"Browseable"`
+	RadioFavoritesUpdateID  *ContentDirectory_RadioFavoritesUpdateID  `xml:"RadioFavoritesUpdateID"`
+	RadioLocationUpdateID   *ContentDirectory_RadioLocationUpdateID   `xml:"RadioLocationUpdateID"`
+	FavoritesUpdateID       *ContentDirectory_FavoritesUpdateID       `xml:"FavoritesUpdateID"`
+	FavoritePresetsUpdateID *ContentDirectory_FavoritePresetsUpdateID `xml:"FavoritePresetsUpdateID"`
 }
 
-func ContentDirectoryDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *ContentDirectoryService) ParseEvent(body []byte) []interface{} {
 	var evt ContentDirectoryUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SystemUpdateID != nil:
-			dispatchContentDirectorySystemUpdateID(zp, *prop.SystemUpdateID) // uint32
+			zp.SystemUpdateID = prop.SystemUpdateID
+			events = append(events, *prop.SystemUpdateID)
 		case prop.ContainerUpdateIDs != nil:
-			dispatchContentDirectoryContainerUpdateIDs(zp, *prop.ContainerUpdateIDs) // string
+			zp.ContainerUpdateIDs = prop.ContainerUpdateIDs
+			events = append(events, *prop.ContainerUpdateIDs)
 		case prop.ShareIndexInProgress != nil:
-			dispatchContentDirectoryShareIndexInProgress(zp, *prop.ShareIndexInProgress) // bool
+			zp.ShareIndexInProgress = prop.ShareIndexInProgress
+			events = append(events, *prop.ShareIndexInProgress)
 		case prop.ShareIndexLastError != nil:
-			dispatchContentDirectoryShareIndexLastError(zp, *prop.ShareIndexLastError) // string
+			zp.ShareIndexLastError = prop.ShareIndexLastError
+			events = append(events, *prop.ShareIndexLastError)
 		case prop.UserRadioUpdateID != nil:
-			dispatchContentDirectoryUserRadioUpdateID(zp, *prop.UserRadioUpdateID) // string
+			zp.UserRadioUpdateID = prop.UserRadioUpdateID
+			events = append(events, *prop.UserRadioUpdateID)
 		case prop.SavedQueuesUpdateID != nil:
-			dispatchContentDirectorySavedQueuesUpdateID(zp, *prop.SavedQueuesUpdateID) // string
+			zp.SavedQueuesUpdateID = prop.SavedQueuesUpdateID
+			events = append(events, *prop.SavedQueuesUpdateID)
 		case prop.ShareListUpdateID != nil:
-			dispatchContentDirectoryShareListUpdateID(zp, *prop.ShareListUpdateID) // string
+			zp.ShareListUpdateID = prop.ShareListUpdateID
+			events = append(events, *prop.ShareListUpdateID)
 		case prop.RecentlyPlayedUpdateID != nil:
-			dispatchContentDirectoryRecentlyPlayedUpdateID(zp, *prop.RecentlyPlayedUpdateID) // string
+			zp.RecentlyPlayedUpdateID = prop.RecentlyPlayedUpdateID
+			events = append(events, *prop.RecentlyPlayedUpdateID)
 		case prop.Browseable != nil:
-			dispatchContentDirectoryBrowseable(zp, *prop.Browseable) // bool
+			zp.Browseable = prop.Browseable
+			events = append(events, *prop.Browseable)
 		case prop.RadioFavoritesUpdateID != nil:
-			dispatchContentDirectoryRadioFavoritesUpdateID(zp, *prop.RadioFavoritesUpdateID) // uint32
+			zp.RadioFavoritesUpdateID = prop.RadioFavoritesUpdateID
+			events = append(events, *prop.RadioFavoritesUpdateID)
 		case prop.RadioLocationUpdateID != nil:
-			dispatchContentDirectoryRadioLocationUpdateID(zp, *prop.RadioLocationUpdateID) // uint32
+			zp.RadioLocationUpdateID = prop.RadioLocationUpdateID
+			events = append(events, *prop.RadioLocationUpdateID)
 		case prop.FavoritesUpdateID != nil:
-			dispatchContentDirectoryFavoritesUpdateID(zp, *prop.FavoritesUpdateID) // string
+			zp.FavoritesUpdateID = prop.FavoritesUpdateID
+			events = append(events, *prop.FavoritesUpdateID)
 		case prop.FavoritePresetsUpdateID != nil:
-			dispatchContentDirectoryFavoritePresetsUpdateID(zp, *prop.FavoritePresetsUpdateID) // string
+			zp.FavoritePresetsUpdateID = prop.FavoritePresetsUpdateID
+			events = append(events, *prop.FavoritePresetsUpdateID)
 		}
 	}
+	return events
 }

@@ -9,9 +9,18 @@ import (
 	"net/url"
 )
 
+// State Variables
+type GroupRenderingControl_GroupMute bool
+type GroupRenderingControl_GroupVolume uint16
+type GroupRenderingControl_GroupVolumeChangeable bool
+
 type GroupRenderingControlService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	GroupMute             *GroupRenderingControl_GroupMute
+	GroupVolume           *GroupRenderingControl_GroupVolume
+	GroupVolumeChangeable *GroupRenderingControl_GroupVolumeChangeable
 }
 
 func NewGroupRenderingControlService(deviceUrl *url.URL) *GroupRenderingControlService {
@@ -241,26 +250,31 @@ type GroupRenderingControlUpnpEvent struct {
 	Properties   []GroupRenderingControlProperty `xml:"property"`
 }
 type GroupRenderingControlProperty struct {
-	XMLName               xml.Name `xml:"property"`
-	GroupMute             *bool    `xml:"GroupMute"`
-	GroupVolume           *uint16  `xml:"GroupVolume"`
-	GroupVolumeChangeable *bool    `xml:"GroupVolumeChangeable"`
+	XMLName               xml.Name                                     `xml:"property"`
+	GroupMute             *GroupRenderingControl_GroupMute             `xml:"GroupMute"`
+	GroupVolume           *GroupRenderingControl_GroupVolume           `xml:"GroupVolume"`
+	GroupVolumeChangeable *GroupRenderingControl_GroupVolumeChangeable `xml:"GroupVolumeChangeable"`
 }
 
-func GroupRenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *GroupRenderingControlService) ParseEvent(body []byte) []interface{} {
 	var evt GroupRenderingControlUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.GroupMute != nil:
-			dispatchGroupRenderingControlGroupMute(zp, *prop.GroupMute) // bool
+			zp.GroupMute = prop.GroupMute
+			events = append(events, *prop.GroupMute)
 		case prop.GroupVolume != nil:
-			dispatchGroupRenderingControlGroupVolume(zp, *prop.GroupVolume) // uint16
+			zp.GroupVolume = prop.GroupVolume
+			events = append(events, *prop.GroupVolume)
 		case prop.GroupVolumeChangeable != nil:
-			dispatchGroupRenderingControlGroupVolumeChangeable(zp, *prop.GroupVolumeChangeable) // bool
+			zp.GroupVolumeChangeable = prop.GroupVolumeChangeable
+			events = append(events, *prop.GroupVolumeChangeable)
 		}
 	}
+	return events
 }

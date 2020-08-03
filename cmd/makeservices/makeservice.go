@@ -118,6 +118,16 @@ func MakeServiceApi(ServiceName, servicecontrolEndpoint, serviceeventEndpoint, x
 		panic(err)
 	}
 
+	eventCount := 0
+	for _, sv := range s.StateVariables {
+		if sv.SendEvents != "yes" {
+			continue
+		}
+		eventCount++
+	}
+
+	// State
+
 	buf := bytes.NewBufferString("")
 	fmt.Fprintf(buf, `package sonos
 
@@ -130,11 +140,33 @@ import (
 	"net/url"
 )
 
+// State Variables
+`)
+
+	for _, sv := range s.StateVariables {
+		if sv.SendEvents != "yes" {
+			continue
+		}
+		fmt.Fprintf(buf, "type %s_%s %s\n", ServiceName, sv.Name, sv.GoDataType())
+	}
+
+	fmt.Fprintf(buf, `
+
 type %sService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
-}
+	// State
+`, ServiceName)
 
+	for _, sv := range s.StateVariables {
+		if sv.SendEvents != "yes" {
+			continue
+		}
+		fmt.Fprintf(buf, "%s *%s_%s\n", sv.Name, ServiceName, sv.Name)
+	}
+
+	fmt.Fprintf(buf, `
+}
 func New%sService(deviceUrl *url.URL) *%sService {
 	c, _ := url.Parse("%s")
 	e, _ := url.Parse("%s")
@@ -150,7 +182,7 @@ func (s *%sService) EventEndpoint() *url.URL {
 	return s.eventEndpoint
 }
 
-`, ServiceName, ServiceName, ServiceName, servicecontrolEndpoint, serviceeventEndpoint, ServiceName, ServiceName, ServiceName)
+`, ServiceName, ServiceName, servicecontrolEndpoint, serviceeventEndpoint, ServiceName, ServiceName, ServiceName)
 
 	// Martial structs
 	fmt.Fprintf(buf, "type %sEnvelope struct {\n", ServiceName)
@@ -269,25 +301,12 @@ func (s *%sService) EventEndpoint() *url.URL {
 			ServiceName, action.Name, action.Name, action.Name)
 	}
 
-	// Exit early if no events
-	nonSendEvents := 0
-	for _, sv := range s.StateVariables {
-		if sv.SendEvents != "yes" {
-			continue
-		}
-		nonSendEvents++
-	}
-
-	if nonSendEvents == 0 {
+	if eventCount == 0 {
+		fmt.Fprintf(buf, `func (zp *%sService) ParseEvent([]byte) []interface{} {
+			return []interface{}{}
+		}`, ServiceName)
 		return buf.Bytes()
 	}
-
-	// for _, sv := range s.StateVariables {
-	// 	if sv.SendEvents != "yes" {
-	// 		continue
-	// 	}
-	// 	fmt.Fprintf(buf, "type %s%s %s\n", ServiceName, sv.Name, sv.GoDataType())
-	// }
 
 	fmt.Fprintf(buf, "type %sUpnpEvent struct {\nXMLName xml.Name `xml:\"propertyset\"`\nXMLNameSpace string `xml:\"xmlns:e,attr\"`\nProperties []%sProperty `xml:\"property\"`\n}\n", ServiceName, ServiceName)
 	fmt.Fprintf(buf, "type %sProperty struct {\nXMLName xml.Name `xml:\"property\"`\n", ServiceName)
@@ -296,15 +315,16 @@ func (s *%sService) EventEndpoint() *url.URL {
 			continue
 		}
 		// fmt.Fprintf(buf, "%s *%s%s `xml:\"%s\"`\n", sv.Name, ServiceName, sv.Name, sv.Name)
-		fmt.Fprintf(buf, "%s *%s `xml:\"%s\"`\n", sv.Name, sv.GoDataType(), sv.Name)
+		fmt.Fprintf(buf, "%s *%s_%s `xml:\"%s\"`\n", sv.Name, ServiceName, sv.Name, sv.Name)
 	}
 
 	fmt.Fprint(buf, "}\n")
-	fmt.Fprintf(buf, `func %sDispatchEvent(zp *ZonePlayer, body []byte) {
+	fmt.Fprintf(buf, `func (zp *%sService) ParseEvent(body []byte) []interface{} {
 	var evt %sUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 	switch {
@@ -314,9 +334,11 @@ func (s *%sService) EventEndpoint() *url.URL {
 			continue
 		}
 		// fmt.Fprintf(buf, "case prop.%s != nil:\n zp.EventCallback(*prop.%s)\n", sv.Name, sv.Name)
-		fmt.Fprintf(buf, "case prop.%s != nil:\ndispatch%s%s(zp, *prop.%s) // %s\n", sv.Name, ServiceName, sv.Name, sv.Name, sv.GoDataType())
+		fmt.Fprintf(buf, "case prop.%s != nil:\n", sv.Name)
+		fmt.Fprintf(buf, "zp.%s = prop.%s\n", sv.Name, sv.Name)
+		fmt.Fprintf(buf, "events = append(events, *prop.%s)\n", sv.Name)
 	}
-	fmt.Fprintf(buf, "}\n}\n}")
+	fmt.Fprintf(buf, "}\n}\nreturn events\n}")
 	return buf.Bytes()
 }
 

@@ -9,9 +9,26 @@ import (
 	"net/url"
 )
 
+// State Variables
+type AlarmClock_TimeZone string
+type AlarmClock_TimeServer string
+type AlarmClock_TimeGeneration uint32
+type AlarmClock_AlarmListVersion string
+type AlarmClock_DailyIndexRefreshTime string
+type AlarmClock_TimeFormat string
+type AlarmClock_DateFormat string
+
 type AlarmClockService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	TimeZone              *AlarmClock_TimeZone
+	TimeServer            *AlarmClock_TimeServer
+	TimeGeneration        *AlarmClock_TimeGeneration
+	AlarmListVersion      *AlarmClock_AlarmListVersion
+	DailyIndexRefreshTime *AlarmClock_DailyIndexRefreshTime
+	TimeFormat            *AlarmClock_TimeFormat
+	DateFormat            *AlarmClock_DateFormat
 }
 
 func NewAlarmClockService(deviceUrl *url.URL) *AlarmClockService {
@@ -558,38 +575,47 @@ type AlarmClockUpnpEvent struct {
 	Properties   []AlarmClockProperty `xml:"property"`
 }
 type AlarmClockProperty struct {
-	XMLName               xml.Name `xml:"property"`
-	TimeZone              *string  `xml:"TimeZone"`
-	TimeServer            *string  `xml:"TimeServer"`
-	TimeGeneration        *uint32  `xml:"TimeGeneration"`
-	AlarmListVersion      *string  `xml:"AlarmListVersion"`
-	DailyIndexRefreshTime *string  `xml:"DailyIndexRefreshTime"`
-	TimeFormat            *string  `xml:"TimeFormat"`
-	DateFormat            *string  `xml:"DateFormat"`
+	XMLName               xml.Name                          `xml:"property"`
+	TimeZone              *AlarmClock_TimeZone              `xml:"TimeZone"`
+	TimeServer            *AlarmClock_TimeServer            `xml:"TimeServer"`
+	TimeGeneration        *AlarmClock_TimeGeneration        `xml:"TimeGeneration"`
+	AlarmListVersion      *AlarmClock_AlarmListVersion      `xml:"AlarmListVersion"`
+	DailyIndexRefreshTime *AlarmClock_DailyIndexRefreshTime `xml:"DailyIndexRefreshTime"`
+	TimeFormat            *AlarmClock_TimeFormat            `xml:"TimeFormat"`
+	DateFormat            *AlarmClock_DateFormat            `xml:"DateFormat"`
 }
 
-func AlarmClockDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *AlarmClockService) ParseEvent(body []byte) []interface{} {
 	var evt AlarmClockUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.TimeZone != nil:
-			dispatchAlarmClockTimeZone(zp, *prop.TimeZone) // string
+			zp.TimeZone = prop.TimeZone
+			events = append(events, *prop.TimeZone)
 		case prop.TimeServer != nil:
-			dispatchAlarmClockTimeServer(zp, *prop.TimeServer) // string
+			zp.TimeServer = prop.TimeServer
+			events = append(events, *prop.TimeServer)
 		case prop.TimeGeneration != nil:
-			dispatchAlarmClockTimeGeneration(zp, *prop.TimeGeneration) // uint32
+			zp.TimeGeneration = prop.TimeGeneration
+			events = append(events, *prop.TimeGeneration)
 		case prop.AlarmListVersion != nil:
-			dispatchAlarmClockAlarmListVersion(zp, *prop.AlarmListVersion) // string
+			zp.AlarmListVersion = prop.AlarmListVersion
+			events = append(events, *prop.AlarmListVersion)
 		case prop.DailyIndexRefreshTime != nil:
-			dispatchAlarmClockDailyIndexRefreshTime(zp, *prop.DailyIndexRefreshTime) // string
+			zp.DailyIndexRefreshTime = prop.DailyIndexRefreshTime
+			events = append(events, *prop.DailyIndexRefreshTime)
 		case prop.TimeFormat != nil:
-			dispatchAlarmClockTimeFormat(zp, *prop.TimeFormat) // string
+			zp.TimeFormat = prop.TimeFormat
+			events = append(events, *prop.TimeFormat)
 		case prop.DateFormat != nil:
-			dispatchAlarmClockDateFormat(zp, *prop.DateFormat) // string
+			zp.DateFormat = prop.DateFormat
+			events = append(events, *prop.DateFormat)
 		}
 	}
+	return events
 }

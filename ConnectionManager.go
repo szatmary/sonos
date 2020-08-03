@@ -9,9 +9,18 @@ import (
 	"net/url"
 )
 
+// State Variables
+type ConnectionManager_SourceProtocolInfo string
+type ConnectionManager_SinkProtocolInfo string
+type ConnectionManager_CurrentConnectionIDs string
+
 type ConnectionManagerService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	SourceProtocolInfo   *ConnectionManager_SourceProtocolInfo
+	SinkProtocolInfo     *ConnectionManager_SinkProtocolInfo
+	CurrentConnectionIDs *ConnectionManager_CurrentConnectionIDs
 }
 
 func NewConnectionManagerService(deviceUrl *url.URL) *ConnectionManagerService {
@@ -167,26 +176,31 @@ type ConnectionManagerUpnpEvent struct {
 	Properties   []ConnectionManagerProperty `xml:"property"`
 }
 type ConnectionManagerProperty struct {
-	XMLName              xml.Name `xml:"property"`
-	SourceProtocolInfo   *string  `xml:"SourceProtocolInfo"`
-	SinkProtocolInfo     *string  `xml:"SinkProtocolInfo"`
-	CurrentConnectionIDs *string  `xml:"CurrentConnectionIDs"`
+	XMLName              xml.Name                                `xml:"property"`
+	SourceProtocolInfo   *ConnectionManager_SourceProtocolInfo   `xml:"SourceProtocolInfo"`
+	SinkProtocolInfo     *ConnectionManager_SinkProtocolInfo     `xml:"SinkProtocolInfo"`
+	CurrentConnectionIDs *ConnectionManager_CurrentConnectionIDs `xml:"CurrentConnectionIDs"`
 }
 
-func ConnectionManagerDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *ConnectionManagerService) ParseEvent(body []byte) []interface{} {
 	var evt ConnectionManagerUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.SourceProtocolInfo != nil:
-			dispatchConnectionManagerSourceProtocolInfo(zp, *prop.SourceProtocolInfo) // string
+			zp.SourceProtocolInfo = prop.SourceProtocolInfo
+			events = append(events, *prop.SourceProtocolInfo)
 		case prop.SinkProtocolInfo != nil:
-			dispatchConnectionManagerSinkProtocolInfo(zp, *prop.SinkProtocolInfo) // string
+			zp.SinkProtocolInfo = prop.SinkProtocolInfo
+			events = append(events, *prop.SinkProtocolInfo)
 		case prop.CurrentConnectionIDs != nil:
-			dispatchConnectionManagerCurrentConnectionIDs(zp, *prop.CurrentConnectionIDs) // string
+			zp.CurrentConnectionIDs = prop.CurrentConnectionIDs
+			events = append(events, *prop.CurrentConnectionIDs)
 		}
 	}
+	return events
 }

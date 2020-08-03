@@ -9,9 +9,14 @@ import (
 	"net/url"
 )
 
+// State Variables
+type RenderingControl_LastChange string
+
 type RenderingControlService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	LastChange *RenderingControl_LastChange
 }
 
 func NewRenderingControlService(deviceUrl *url.URL) *RenderingControlService {
@@ -883,20 +888,23 @@ type RenderingControlUpnpEvent struct {
 	Properties   []RenderingControlProperty `xml:"property"`
 }
 type RenderingControlProperty struct {
-	XMLName    xml.Name `xml:"property"`
-	LastChange *string  `xml:"LastChange"`
+	XMLName    xml.Name                     `xml:"property"`
+	LastChange *RenderingControl_LastChange `xml:"LastChange"`
 }
 
-func RenderingControlDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *RenderingControlService) ParseEvent(body []byte) []interface{} {
 	var evt RenderingControlUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchRenderingControlLastChange(zp, *prop.LastChange) // string
+			zp.LastChange = prop.LastChange
+			events = append(events, *prop.LastChange)
 		}
 	}
+	return events
 }

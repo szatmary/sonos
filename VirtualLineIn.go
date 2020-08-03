@@ -9,9 +9,14 @@ import (
 	"net/url"
 )
 
+// State Variables
+type VirtualLineIn_LastChange string
+
 type VirtualLineInService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	LastChange *VirtualLineIn_LastChange
 }
 
 func NewVirtualLineInService(deviceUrl *url.URL) *VirtualLineInService {
@@ -289,20 +294,23 @@ type VirtualLineInUpnpEvent struct {
 	Properties   []VirtualLineInProperty `xml:"property"`
 }
 type VirtualLineInProperty struct {
-	XMLName    xml.Name `xml:"property"`
-	LastChange *string  `xml:"LastChange"`
+	XMLName    xml.Name                  `xml:"property"`
+	LastChange *VirtualLineIn_LastChange `xml:"LastChange"`
 }
 
-func VirtualLineInDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *VirtualLineInService) ParseEvent(body []byte) []interface{} {
 	var evt VirtualLineInUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchVirtualLineInLastChange(zp, *prop.LastChange) // string
+			zp.LastChange = prop.LastChange
+			events = append(events, *prop.LastChange)
 		}
 	}
+	return events
 }

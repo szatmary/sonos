@@ -9,9 +9,22 @@ import (
 	"net/url"
 )
 
+// State Variables
+type SystemProperties_CustomerID string
+type SystemProperties_UpdateID uint32
+type SystemProperties_UpdateIDX uint32
+type SystemProperties_VoiceUpdateID uint32
+type SystemProperties_ThirdPartyHash string
+
 type SystemPropertiesService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	CustomerID     *SystemProperties_CustomerID
+	UpdateID       *SystemProperties_UpdateID
+	UpdateIDX      *SystemProperties_UpdateIDX
+	VoiceUpdateID  *SystemProperties_VoiceUpdateID
+	ThirdPartyHash *SystemProperties_ThirdPartyHash
 }
 
 func NewSystemPropertiesService(deviceUrl *url.URL) *SystemPropertiesService {
@@ -541,32 +554,39 @@ type SystemPropertiesUpnpEvent struct {
 	Properties   []SystemPropertiesProperty `xml:"property"`
 }
 type SystemPropertiesProperty struct {
-	XMLName        xml.Name `xml:"property"`
-	CustomerID     *string  `xml:"CustomerID"`
-	UpdateID       *uint32  `xml:"UpdateID"`
-	UpdateIDX      *uint32  `xml:"UpdateIDX"`
-	VoiceUpdateID  *uint32  `xml:"VoiceUpdateID"`
-	ThirdPartyHash *string  `xml:"ThirdPartyHash"`
+	XMLName        xml.Name                         `xml:"property"`
+	CustomerID     *SystemProperties_CustomerID     `xml:"CustomerID"`
+	UpdateID       *SystemProperties_UpdateID       `xml:"UpdateID"`
+	UpdateIDX      *SystemProperties_UpdateIDX      `xml:"UpdateIDX"`
+	VoiceUpdateID  *SystemProperties_VoiceUpdateID  `xml:"VoiceUpdateID"`
+	ThirdPartyHash *SystemProperties_ThirdPartyHash `xml:"ThirdPartyHash"`
 }
 
-func SystemPropertiesDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *SystemPropertiesService) ParseEvent(body []byte) []interface{} {
 	var evt SystemPropertiesUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.CustomerID != nil:
-			dispatchSystemPropertiesCustomerID(zp, *prop.CustomerID) // string
+			zp.CustomerID = prop.CustomerID
+			events = append(events, *prop.CustomerID)
 		case prop.UpdateID != nil:
-			dispatchSystemPropertiesUpdateID(zp, *prop.UpdateID) // uint32
+			zp.UpdateID = prop.UpdateID
+			events = append(events, *prop.UpdateID)
 		case prop.UpdateIDX != nil:
-			dispatchSystemPropertiesUpdateIDX(zp, *prop.UpdateIDX) // uint32
+			zp.UpdateIDX = prop.UpdateIDX
+			events = append(events, *prop.UpdateIDX)
 		case prop.VoiceUpdateID != nil:
-			dispatchSystemPropertiesVoiceUpdateID(zp, *prop.VoiceUpdateID) // uint32
+			zp.VoiceUpdateID = prop.VoiceUpdateID
+			events = append(events, *prop.VoiceUpdateID)
 		case prop.ThirdPartyHash != nil:
-			dispatchSystemPropertiesThirdPartyHash(zp, *prop.ThirdPartyHash) // string
+			zp.ThirdPartyHash = prop.ThirdPartyHash
+			events = append(events, *prop.ThirdPartyHash)
 		}
 	}
+	return events
 }

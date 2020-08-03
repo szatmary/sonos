@@ -9,9 +9,22 @@ import (
 	"net/url"
 )
 
+// State Variables
+type GroupManagement_GroupCoordinatorIsLocal bool
+type GroupManagement_LocalGroupUUID string
+type GroupManagement_VirtualLineInGroupID string
+type GroupManagement_ResetVolumeAfter bool
+type GroupManagement_VolumeAVTransportURI string
+
 type GroupManagementService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	GroupCoordinatorIsLocal *GroupManagement_GroupCoordinatorIsLocal
+	LocalGroupUUID          *GroupManagement_LocalGroupUUID
+	VirtualLineInGroupID    *GroupManagement_VirtualLineInGroupID
+	ResetVolumeAfter        *GroupManagement_ResetVolumeAfter
+	VolumeAVTransportURI    *GroupManagement_VolumeAVTransportURI
 }
 
 func NewGroupManagementService(deviceUrl *url.URL) *GroupManagementService {
@@ -191,32 +204,39 @@ type GroupManagementUpnpEvent struct {
 	Properties   []GroupManagementProperty `xml:"property"`
 }
 type GroupManagementProperty struct {
-	XMLName                 xml.Name `xml:"property"`
-	GroupCoordinatorIsLocal *bool    `xml:"GroupCoordinatorIsLocal"`
-	LocalGroupUUID          *string  `xml:"LocalGroupUUID"`
-	VirtualLineInGroupID    *string  `xml:"VirtualLineInGroupID"`
-	ResetVolumeAfter        *bool    `xml:"ResetVolumeAfter"`
-	VolumeAVTransportURI    *string  `xml:"VolumeAVTransportURI"`
+	XMLName                 xml.Name                                 `xml:"property"`
+	GroupCoordinatorIsLocal *GroupManagement_GroupCoordinatorIsLocal `xml:"GroupCoordinatorIsLocal"`
+	LocalGroupUUID          *GroupManagement_LocalGroupUUID          `xml:"LocalGroupUUID"`
+	VirtualLineInGroupID    *GroupManagement_VirtualLineInGroupID    `xml:"VirtualLineInGroupID"`
+	ResetVolumeAfter        *GroupManagement_ResetVolumeAfter        `xml:"ResetVolumeAfter"`
+	VolumeAVTransportURI    *GroupManagement_VolumeAVTransportURI    `xml:"VolumeAVTransportURI"`
 }
 
-func GroupManagementDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *GroupManagementService) ParseEvent(body []byte) []interface{} {
 	var evt GroupManagementUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.GroupCoordinatorIsLocal != nil:
-			dispatchGroupManagementGroupCoordinatorIsLocal(zp, *prop.GroupCoordinatorIsLocal) // bool
+			zp.GroupCoordinatorIsLocal = prop.GroupCoordinatorIsLocal
+			events = append(events, *prop.GroupCoordinatorIsLocal)
 		case prop.LocalGroupUUID != nil:
-			dispatchGroupManagementLocalGroupUUID(zp, *prop.LocalGroupUUID) // string
+			zp.LocalGroupUUID = prop.LocalGroupUUID
+			events = append(events, *prop.LocalGroupUUID)
 		case prop.VirtualLineInGroupID != nil:
-			dispatchGroupManagementVirtualLineInGroupID(zp, *prop.VirtualLineInGroupID) // string
+			zp.VirtualLineInGroupID = prop.VirtualLineInGroupID
+			events = append(events, *prop.VirtualLineInGroupID)
 		case prop.ResetVolumeAfter != nil:
-			dispatchGroupManagementResetVolumeAfter(zp, *prop.ResetVolumeAfter) // bool
+			zp.ResetVolumeAfter = prop.ResetVolumeAfter
+			events = append(events, *prop.ResetVolumeAfter)
 		case prop.VolumeAVTransportURI != nil:
-			dispatchGroupManagementVolumeAVTransportURI(zp, *prop.VolumeAVTransportURI) // string
+			zp.VolumeAVTransportURI = prop.VolumeAVTransportURI
+			events = append(events, *prop.VolumeAVTransportURI)
 		}
 	}
+	return events
 }

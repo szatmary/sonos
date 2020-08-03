@@ -9,9 +9,34 @@ import (
 	"net/url"
 )
 
+// State Variables
+type ZoneGroupTopology_AvailableSoftwareUpdate string
+type ZoneGroupTopology_ZoneGroupState string
+type ZoneGroupTopology_ThirdPartyMediaServersX string
+type ZoneGroupTopology_AlarmRunSequence string
+type ZoneGroupTopology_MuseHouseholdId string
+type ZoneGroupTopology_ZoneGroupName string
+type ZoneGroupTopology_ZoneGroupID string
+type ZoneGroupTopology_ZonePlayerUUIDsInGroup string
+type ZoneGroupTopology_AreasUpdateID string
+type ZoneGroupTopology_SourceAreasUpdateID string
+type ZoneGroupTopology_NetsettingsUpdateID string
+
 type ZoneGroupTopologyService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	AvailableSoftwareUpdate *ZoneGroupTopology_AvailableSoftwareUpdate
+	ZoneGroupState          *ZoneGroupTopology_ZoneGroupState
+	ThirdPartyMediaServersX *ZoneGroupTopology_ThirdPartyMediaServersX
+	AlarmRunSequence        *ZoneGroupTopology_AlarmRunSequence
+	MuseHouseholdId         *ZoneGroupTopology_MuseHouseholdId
+	ZoneGroupName           *ZoneGroupTopology_ZoneGroupName
+	ZoneGroupID             *ZoneGroupTopology_ZoneGroupID
+	ZonePlayerUUIDsInGroup  *ZoneGroupTopology_ZonePlayerUUIDsInGroup
+	AreasUpdateID           *ZoneGroupTopology_AreasUpdateID
+	SourceAreasUpdateID     *ZoneGroupTopology_SourceAreasUpdateID
+	NetsettingsUpdateID     *ZoneGroupTopology_NetsettingsUpdateID
 }
 
 func NewZoneGroupTopologyService(deviceUrl *url.URL) *ZoneGroupTopologyService {
@@ -301,50 +326,63 @@ type ZoneGroupTopologyUpnpEvent struct {
 	Properties   []ZoneGroupTopologyProperty `xml:"property"`
 }
 type ZoneGroupTopologyProperty struct {
-	XMLName                 xml.Name `xml:"property"`
-	AvailableSoftwareUpdate *string  `xml:"AvailableSoftwareUpdate"`
-	ZoneGroupState          *string  `xml:"ZoneGroupState"`
-	ThirdPartyMediaServersX *string  `xml:"ThirdPartyMediaServersX"`
-	AlarmRunSequence        *string  `xml:"AlarmRunSequence"`
-	MuseHouseholdId         *string  `xml:"MuseHouseholdId"`
-	ZoneGroupName           *string  `xml:"ZoneGroupName"`
-	ZoneGroupID             *string  `xml:"ZoneGroupID"`
-	ZonePlayerUUIDsInGroup  *string  `xml:"ZonePlayerUUIDsInGroup"`
-	AreasUpdateID           *string  `xml:"AreasUpdateID"`
-	SourceAreasUpdateID     *string  `xml:"SourceAreasUpdateID"`
-	NetsettingsUpdateID     *string  `xml:"NetsettingsUpdateID"`
+	XMLName                 xml.Name                                   `xml:"property"`
+	AvailableSoftwareUpdate *ZoneGroupTopology_AvailableSoftwareUpdate `xml:"AvailableSoftwareUpdate"`
+	ZoneGroupState          *ZoneGroupTopology_ZoneGroupState          `xml:"ZoneGroupState"`
+	ThirdPartyMediaServersX *ZoneGroupTopology_ThirdPartyMediaServersX `xml:"ThirdPartyMediaServersX"`
+	AlarmRunSequence        *ZoneGroupTopology_AlarmRunSequence        `xml:"AlarmRunSequence"`
+	MuseHouseholdId         *ZoneGroupTopology_MuseHouseholdId         `xml:"MuseHouseholdId"`
+	ZoneGroupName           *ZoneGroupTopology_ZoneGroupName           `xml:"ZoneGroupName"`
+	ZoneGroupID             *ZoneGroupTopology_ZoneGroupID             `xml:"ZoneGroupID"`
+	ZonePlayerUUIDsInGroup  *ZoneGroupTopology_ZonePlayerUUIDsInGroup  `xml:"ZonePlayerUUIDsInGroup"`
+	AreasUpdateID           *ZoneGroupTopology_AreasUpdateID           `xml:"AreasUpdateID"`
+	SourceAreasUpdateID     *ZoneGroupTopology_SourceAreasUpdateID     `xml:"SourceAreasUpdateID"`
+	NetsettingsUpdateID     *ZoneGroupTopology_NetsettingsUpdateID     `xml:"NetsettingsUpdateID"`
 }
 
-func ZoneGroupTopologyDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *ZoneGroupTopologyService) ParseEvent(body []byte) []interface{} {
 	var evt ZoneGroupTopologyUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.AvailableSoftwareUpdate != nil:
-			dispatchZoneGroupTopologyAvailableSoftwareUpdate(zp, *prop.AvailableSoftwareUpdate) // string
+			zp.AvailableSoftwareUpdate = prop.AvailableSoftwareUpdate
+			events = append(events, *prop.AvailableSoftwareUpdate)
 		case prop.ZoneGroupState != nil:
-			dispatchZoneGroupTopologyZoneGroupState(zp, *prop.ZoneGroupState) // string
+			zp.ZoneGroupState = prop.ZoneGroupState
+			events = append(events, *prop.ZoneGroupState)
 		case prop.ThirdPartyMediaServersX != nil:
-			dispatchZoneGroupTopologyThirdPartyMediaServersX(zp, *prop.ThirdPartyMediaServersX) // string
+			zp.ThirdPartyMediaServersX = prop.ThirdPartyMediaServersX
+			events = append(events, *prop.ThirdPartyMediaServersX)
 		case prop.AlarmRunSequence != nil:
-			dispatchZoneGroupTopologyAlarmRunSequence(zp, *prop.AlarmRunSequence) // string
+			zp.AlarmRunSequence = prop.AlarmRunSequence
+			events = append(events, *prop.AlarmRunSequence)
 		case prop.MuseHouseholdId != nil:
-			dispatchZoneGroupTopologyMuseHouseholdId(zp, *prop.MuseHouseholdId) // string
+			zp.MuseHouseholdId = prop.MuseHouseholdId
+			events = append(events, *prop.MuseHouseholdId)
 		case prop.ZoneGroupName != nil:
-			dispatchZoneGroupTopologyZoneGroupName(zp, *prop.ZoneGroupName) // string
+			zp.ZoneGroupName = prop.ZoneGroupName
+			events = append(events, *prop.ZoneGroupName)
 		case prop.ZoneGroupID != nil:
-			dispatchZoneGroupTopologyZoneGroupID(zp, *prop.ZoneGroupID) // string
+			zp.ZoneGroupID = prop.ZoneGroupID
+			events = append(events, *prop.ZoneGroupID)
 		case prop.ZonePlayerUUIDsInGroup != nil:
-			dispatchZoneGroupTopologyZonePlayerUUIDsInGroup(zp, *prop.ZonePlayerUUIDsInGroup) // string
+			zp.ZonePlayerUUIDsInGroup = prop.ZonePlayerUUIDsInGroup
+			events = append(events, *prop.ZonePlayerUUIDsInGroup)
 		case prop.AreasUpdateID != nil:
-			dispatchZoneGroupTopologyAreasUpdateID(zp, *prop.AreasUpdateID) // string
+			zp.AreasUpdateID = prop.AreasUpdateID
+			events = append(events, *prop.AreasUpdateID)
 		case prop.SourceAreasUpdateID != nil:
-			dispatchZoneGroupTopologySourceAreasUpdateID(zp, *prop.SourceAreasUpdateID) // string
+			zp.SourceAreasUpdateID = prop.SourceAreasUpdateID
+			events = append(events, *prop.SourceAreasUpdateID)
 		case prop.NetsettingsUpdateID != nil:
-			dispatchZoneGroupTopologyNetsettingsUpdateID(zp, *prop.NetsettingsUpdateID) // string
+			zp.NetsettingsUpdateID = prop.NetsettingsUpdateID
+			events = append(events, *prop.NetsettingsUpdateID)
 		}
 	}
+	return events
 }

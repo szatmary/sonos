@@ -105,45 +105,49 @@ func (s *Sonos) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	var events []interface{}
 	if request.URL.Path == zonePlayer.AlarmClock.EventEndpoint().Path {
-		AlarmClockDispatchEvent(zonePlayer, data)
+		events = zonePlayer.AlarmClock.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.AVTransport.EventEndpoint().Path {
-		AVTransportDispatchEvent(zonePlayer, data)
+		events = zonePlayer.AVTransport.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.ConnectionManager.EventEndpoint().Path {
-		ConnectionManagerDispatchEvent(zonePlayer, data)
+		events = zonePlayer.ConnectionManager.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.ContentDirectory.EventEndpoint().Path {
-		ContentDirectoryDispatchEvent(zonePlayer, data)
+		events = zonePlayer.ContentDirectory.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.DeviceProperties.EventEndpoint().Path {
-		DevicePropertiesDispatchEvent(zonePlayer, data)
+		events = zonePlayer.DeviceProperties.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.GroupManagement.EventEndpoint().Path {
-		GroupManagementDispatchEvent(zonePlayer, data)
+		events = zonePlayer.GroupManagement.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.GroupRenderingControl.EventEndpoint().Path {
-		GroupRenderingControlDispatchEvent(zonePlayer, data)
+		events = zonePlayer.GroupRenderingControl.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.MusicServices.EventEndpoint().Path {
-		MusicServicesDispatchEvent(zonePlayer, data)
+		events = zonePlayer.MusicServices.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.Queue.EventEndpoint().Path {
-		QueueDispatchEvent(zonePlayer, data)
+		events = zonePlayer.Queue.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.RenderingControl.EventEndpoint().Path {
-		RenderingControlDispatchEvent(zonePlayer, data)
+		events = zonePlayer.RenderingControl.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.SystemProperties.EventEndpoint().Path {
-		SystemPropertiesDispatchEvent(zonePlayer, data)
+		events = zonePlayer.SystemProperties.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.VirtualLineIn.EventEndpoint().Path {
-		VirtualLineInDispatchEvent(zonePlayer, data)
+		events = zonePlayer.VirtualLineIn.ParseEvent(data)
 	}
 	if request.URL.Path == zonePlayer.ZoneGroupTopology.EventEndpoint().Path {
-		fmt.Printf("Dispatching %s (%s)\n", request.URL.Path, zonePlayer.ZoneGroupTopology.EventEndpoint().Path)
-		ZoneGroupTopologyDispatchEvent(zonePlayer, data)
+		events = zonePlayer.ZoneGroupTopology.ParseEvent(data)
+	}
+
+	for _, evt := range events {
+		zonePlayer.Event(evt)
 	}
 
 	response.WriteHeader(200)

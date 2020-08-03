@@ -9,9 +9,14 @@ import (
 	"net/url"
 )
 
+// State Variables
+type AVTransport_LastChange string
+
 type AVTransportService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	LastChange *AVTransport_LastChange
 }
 
 func NewAVTransportService(deviceUrl *url.URL) *AVTransportService {
@@ -1294,20 +1299,23 @@ type AVTransportUpnpEvent struct {
 	Properties   []AVTransportProperty `xml:"property"`
 }
 type AVTransportProperty struct {
-	XMLName    xml.Name `xml:"property"`
-	LastChange *string  `xml:"LastChange"`
+	XMLName    xml.Name                `xml:"property"`
+	LastChange *AVTransport_LastChange `xml:"LastChange"`
 }
 
-func AVTransportDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *AVTransportService) ParseEvent(body []byte) []interface{} {
 	var evt AVTransportUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchAVTransportLastChange(zp, *prop.LastChange) // string
+			zp.LastChange = prop.LastChange
+			events = append(events, *prop.LastChange)
 		}
 	}
+	return events
 }

@@ -9,9 +9,14 @@ import (
 	"net/url"
 )
 
+// State Variables
+type Queue_LastChange string
+
 type QueueService struct {
 	controlEndpoint *url.URL
 	eventEndpoint   *url.URL
+	// State
+	LastChange *Queue_LastChange
 }
 
 func NewQueueService(deviceUrl *url.URL) *QueueService {
@@ -412,20 +417,23 @@ type QueueUpnpEvent struct {
 	Properties   []QueueProperty `xml:"property"`
 }
 type QueueProperty struct {
-	XMLName    xml.Name `xml:"property"`
-	LastChange *string  `xml:"LastChange"`
+	XMLName    xml.Name          `xml:"property"`
+	LastChange *Queue_LastChange `xml:"LastChange"`
 }
 
-func QueueDispatchEvent(zp *ZonePlayer, body []byte) {
+func (zp *QueueService) ParseEvent(body []byte) []interface{} {
 	var evt QueueUpnpEvent
+	var events []interface{}
 	err := xml.Unmarshal(body, &evt)
 	if err != nil {
-		return
+		return events
 	}
 	for _, prop := range evt.Properties {
 		switch {
 		case prop.LastChange != nil:
-			dispatchQueueLastChange(zp, *prop.LastChange) // string
+			zp.LastChange = prop.LastChange
+			events = append(events, *prop.LastChange)
 		}
 	}
+	return events
 }
